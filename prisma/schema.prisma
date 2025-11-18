@@ -1,0 +1,411 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+/// @seed="npx tsx prisma/seed.ts"
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================================
+// Form Builder 
+// ================================
+
+model Form {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  schemaJson  Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  type        FormType @default(SERVICE_FORM)
+  responses   FormResponse[]
+  services    Service[]
+}
+
+enum FormType {
+  LAWYER_REGISTRATION
+  CONTACT_FORM
+  SERVICE_FORM
+}
+
+model FormResponse {
+  id         String   @id @default(cuid())
+  formId     String
+  form       Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  rawJson    Json?
+
+  cases       Case[]
+}
+
+
+// ================================
+// Services
+// ================================
+
+model ServiceCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  services    Service[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String   
+  slug        String
+  description String?
+  isActive    Boolean  @default(true)
+  contentJson Json?
+
+  faqs        ServiceFAQ[]
+  rating      ServiceRating[]
+  price       ServicePrice[]
+  cases       Case[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  categoryName  String
+  category      ServiceCategory @relation(fields: [categoryName], references: [name], onDelete: Cascade)
+  
+  formId      String
+  form        Form     @relation(fields: [formId], references: [id] , onDelete: Cascade)
+
+  @@unique([name, categoryName])
+  @@unique([slug, categoryName])
+}
+
+model ServicePrice {
+  id          String   @id @default(cuid())
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  name        String
+  price       Int
+  discountAmount    Int?
+  isCompulsory    Boolean @default(false)
+  
+  // Payment relations
+  paymentOrderItems PaymentOrderItem[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ServiceRating {
+  id          String   @id @default(cuid())
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  rating      Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ServiceFAQ  {
+  id          String   @id @default(cuid())
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  question    String
+  answer      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ================================
+// Lawyer
+// ================================
+
+model Lawyer {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  phone       String?
+
+  specialization String[]
+  experience   Int?
+  languages    String[]
+  isActive     Boolean  @default(true)
+
+  remarks      String[]
+
+  cases       Case[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Case { 
+  id          String   @id @default(cuid())
+
+  status      CaseStatus @default(PENDING)
+  isActive    Boolean  @default(true)
+
+  customerName      String
+  customerEmail     String
+  customerPhone     String
+
+  files       CaseFiles[]
+  meetings    CaseMeeting[]
+  whatsappNotifications WhatsAppNotification[]
+  paymentOrders PaymentOrder[]
+
+  isAutoNotificationOn Boolean @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lawyerId    String?
+  lawyer      Lawyer?   @relation(fields: [lawyerId], references: [id], onDelete: Cascade)
+
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  formResponseId String?
+  formResponse  FormResponse? @relation(fields: [formResponseId], references: [id], onDelete: Cascade)
+}
+
+model CaseFiles { 
+  id          String   @id @default(cuid())
+  caseId      String
+  case        Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  name        String
+  fileUrl     String?
+  s3Path      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum CaseStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model CaseMeeting {
+  id          String   @id @default(cuid())
+  linkOrNumber String?
+  startTime   DateTime?
+  endTime     DateTime?
+  duration    Int?
+  meetingNotes String?
+  meetingName String? 
+
+  // meetingLinks MeetingLink[]
+  
+  caseId      String
+  case        Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// model MeetingLink {
+//   id          String   @id @default(cuid())
+//   link        String
+
+//   isUsed      Boolean @default(false)
+
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+
+//   meetingId   String
+//   meeting     CaseMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+// }
+
+// ================================
+// WhatsApp Notifications
+// ================================
+
+model WhatsAppNotification {
+  id          String   @id @default(cuid())
+  
+  recipientPhone    String
+  recipientType     RecipientType
+
+  messageType       MessageType
+  templateName      String?
+  messageContent    String
+  
+  status            NotificationStatus @default(PENDING)
+  twilioMessageSid  String?
+  deliveredAt       DateTime?
+  failedAt          DateTime?
+  errorMessage      String?
+  
+  templateId        String?
+  template          WhatsAppTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  
+  caseId            String?
+  case              Case? @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+enum RecipientType {
+  CLIENT
+  LAWYER
+  ADMIN
+}
+
+enum MessageType {
+  MEETING_SCHEDULED
+  MEETING_REMINDER
+  PAYMENT_SUCCESS
+  PAYMENT_FAILURE
+  CASE_ASSIGNED
+  CASE_STATUS_UPDATE
+  GENERAL_NOTIFICATION
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+}
+
+// ================================
+// WhatsApp Templates
+// ================================
+
+model WhatsAppTemplate {
+  id           String                 @id @default(cuid())
+  twilioSid    String                 @unique
+  friendlyName String
+  category     String
+  language     String
+  body         String
+  status       WhatsAppTemplateStatus @default(PENDING)
+  isActive     Boolean                @default(false)
+
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  notifications WhatsAppNotification[]
+}
+
+enum WhatsAppTemplateStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ================================
+// Payment & Transactions
+// ================================
+
+model PaymentOrder {
+  id                    String                @id @default(cuid())
+  merchantOrderId       String                @unique
+  phonepeOrderId        String?               @unique
+  amount                Int                   // Amount in paisa
+  currency              String                @default("INR")
+  
+  // Payment Details
+  status                PaymentStatus         @default(PENDING)
+  paymentMethod         PaymentMethod?
+  phonepeTransactionId  String?
+  
+  // PhonePe Response Data
+  phonepeResponse       Json?
+  redirectUrl           String?
+  checkoutUrl           String?
+  expireAt              DateTime?
+  
+  // Customer Information
+  customerName          String
+  customerEmail         String
+  customerPhone         String
+  
+  // Selected Services & Pricing
+  selectedPrices        PaymentOrderItem[]
+  
+  // Relations
+  caseId                String?
+  case                  Case?                 @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  
+  // Payment Audit Trail
+  paymentLogs           PaymentAuditLog[]
+  
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+}
+
+model PaymentOrderItem {
+  id                    String                @id @default(cuid())
+  orderId               String
+  order                 PaymentOrder          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  // Direct relation to ServicePrice
+  servicePriceId        String
+  servicePrice          ServicePrice          @relation(fields: [servicePriceId], references: [id], onDelete: Cascade)
+  
+  // Snapshot of pricing at time of order (for audit purposes)
+  priceAtOrderTime      Int                   // Price in paisa at the time of order
+  discountAtOrderTime   Int?                  // Discount amount in paisa at the time of order
+  finalPrice            Int                   // Final calculated price in paisa
+  
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+}
+
+model PaymentAuditLog {
+  id                    String                @id @default(cuid())
+  orderId               String
+  order                 PaymentOrder          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  event                 PaymentEvent
+  status                PaymentStatus?
+  description           String
+  metadata              Json?                 // Store additional data like PhonePe responses, errors, etc.
+  
+  createdAt             DateTime              @default(now())
+}
+
+enum PaymentStatus {
+  PENDING
+  INITIATED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentMethod {
+  UPI_INTENT
+  UPI_COLLECT
+  UPI_QR
+  CARD
+  TOKEN
+  NET_BANKING
+  WALLET
+}
+
+enum PaymentEvent {
+  ORDER_CREATED
+  PAYMENT_INITIATED
+  PAYMENT_PROCESSING
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  PAYMENT_CANCELLED
+  REFUND_INITIATED
+  REFUND_COMPLETED
+  REFUND_FAILED
+  WEBHOOK_RECEIVED
+  STATUS_CHECK
+  ERROR_OCCURRED
+}

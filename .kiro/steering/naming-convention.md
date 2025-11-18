@@ -1,0 +1,57 @@
+---
+inclusion: always
+---
+
+### Naming Convention
+
+- **File names (kebab-case)**: Use lowercase words separated by hyphens, followed by the extension.
+
+  - **Format**: `xyz-xyz.ext`
+  - **Do**: `user-profile-card.tsx`, `checkout-form.ts`, `api-client.ts`, `index.ts`
+  - **Don’t**: `UserProfileCard.tsx`, `user_profile_card.tsx`, `userProfileCard.tsx`
+
+- **Functions (camelCase)**: Name functions in camelCase. Prefer arrow functions assigned to `const`.
+
+  - **Do**:
+    ```ts
+    const fetchUserData = async () => {};
+    const parseDateString = (value: string) => {};
+    ```
+  - **Don’t**:
+    ```ts
+    function FetchUserData() {}
+    const Parse_date_string = () => {};
+    ```
+
+- **Event handlers (handle\* prefix)**: Event handler functions must start with `handle` and use camelCase.
+
+  - **Do**:
+    ```ts
+    const handleClick = () => {};
+    const handleSubmit = (event: React.FormEvent) => {};
+    const handleKeyDown = (event: React.KeyboardEvent) => {};
+    ```
+  - **Usage**:
+    ```tsx
+    <button onClick={handleClick} />
+    <form onSubmit={handleSubmit} />
+    ```
+
+- **Variables (camelCase)**: Use camelCase for variable and constant names.
+
+  - **Do**:
+    ```ts
+    const userId = "";
+    const isLoading = false;
+    const maxRetries = 3;
+    ```
+  - **Don’t**:
+    ```ts
+    const User_Id = "";
+    const is_loading = false;
+    const MAXRETRIES = 3; // unless a project-wide rule specifies ALL_CAPS for compile-time constants
+    ```
+
+- **General**:
+  - Define functions as `const fnName = () => {}`.
+  - Keep names descriptive and concise.

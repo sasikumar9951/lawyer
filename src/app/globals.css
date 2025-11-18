@@ -1,0 +1,180 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Global blue theme for all components */
+@layer components {
+  /* Table hover states - automatic blue hover for all tables */
+  table tbody tr:hover {
+    @apply bg-blue-50/60 transition-colors;
+  }
+
+  /* Input focus with blue ring */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    @apply ring-2 ring-blue-500 ring-offset-2 border-blue-300;
+  }
+
+  /* Button hover states with blue theme */
+  .btn-outline:hover {
+    @apply bg-blue-100 border-blue-200 text-blue-700;
+  }
+
+  /* Card styling with blue borders */
+  .card {
+    @apply border-blue-100 bg-white/90 backdrop-blur;
+  }
+
+  /* Label styling */
+  label {
+    @apply text-blue-800 font-medium;
+  }
+
+  /* Badge styling */
+  .badge {
+    @apply text-blue-800 bg-blue-100;
+  }
+
+  /* Global admin pages styling */
+  .admin-page {
+    @apply bg-blue-50 min-h-screen;
+  }
+
+  /* Admin card styling */
+  .admin-card {
+    @apply border-blue-100 bg-white/90 backdrop-blur;
+  }
+
+  /* Admin headings */
+  .admin-heading-primary {
+    @apply text-blue-900 font-bold;
+  }
+
+  .admin-heading-secondary {
+    @apply text-blue-700;
+  }
+
+  .admin-text-muted {
+    @apply text-blue-700/80;
+  }
+}
+
+:root {
+  --radius: 0.65rem;
+  --background: #eff6ff; /* Blue-50 background */
+  --foreground: #1e3a8a; /* Blue-900 text */
+  --card: #ffffff;
+  --card-foreground: #1e3a8a; /* Blue-900 for card text */
+  --popover: #ffffff;
+  --popover-foreground: #1e3a8a;
+  --primary: #3b82f6;
+  --primary-foreground: #f8fafc;
+  --secondary: #dbeafe; /* Blue-100 for secondary */
+  --secondary-foreground: #1e40af; /* Blue-800 for secondary text */
+  --muted: #dbeafe; /* Blue-100 for muted */
+  --muted-foreground: #64748b; /* Keep gray for muted text */
+  --accent: #dbeafe; /* Blue-100 for accent */
+  --accent-foreground: #1e40af; /* Blue-800 for accent text */
+  --destructive: #dc2626;
+  --border: #bfdbfe; /* Blue-200 for borders */
+  --input: #bfdbfe; /* Blue-200 for input borders */
+  --ring: #3b82f6;
+  --chart-1: #fbbf24;
+  --chart-2: #10b981;
+  --chart-3: #3b82f6;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
+  --sidebar: #eff6ff; /* Blue-50 for sidebar */
+  --sidebar-foreground: #1e3a8a; /* Blue-900 for sidebar text */
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #f8fafc;
+  --sidebar-accent: #dbeafe; /* Blue-100 for sidebar accent */
+  --sidebar-accent-foreground: #1e40af; /* Blue-800 for sidebar accent text */
+  --sidebar-border: #bfdbfe; /* Blue-200 for sidebar borders */
+  --sidebar-ring: #3b82f6;
+}
+
+.dark {
+  --background: #0f172a; /* Dark blue background */
+  --foreground: #f1f5f9;
+  --card: #1e293b; /* Dark blue card */
+  --card-foreground: #f1f5f9;
+  --popover: #1e293b;
+  --popover-foreground: #f1f5f9;
+  --primary: #3b82f6;
+  --primary-foreground: #0f172a;
+  --secondary: #334155; /* Darker blue-gray */
+  --secondary-foreground: #f1f5f9;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --accent: #334155;
+  --accent-foreground: #f1f5f9;
+  --destructive: #dc2626;
+  --border: rgba(148, 163, 184, 0.2);
+  --input: rgba(148, 163, 184, 0.3);
+  --ring: #3b82f6;
+  --chart-1: #3b82f6;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #8b5cf6;
+  --chart-5: #ef4444;
+  --sidebar: #0f172a;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #0f172a;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: #f1f5f9;
+  --sidebar-border: rgba(148, 163, 184, 0.2);
+  --sidebar-ring: #3b82f6;
+}
