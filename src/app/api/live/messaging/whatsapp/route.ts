@@ -43,7 +43,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     if (!result.success) {
       return NextResponse.json(
-        { success: false, message: result.error },
+        {
+          success: false,
+          message: (result as any).error || "WhatsApp message send failed.",
+        },
         { status: 500 }
       );
     }

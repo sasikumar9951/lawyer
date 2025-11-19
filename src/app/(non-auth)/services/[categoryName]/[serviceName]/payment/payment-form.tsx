@@ -652,7 +652,7 @@ export default function PaymentForm({
         )}
 
         {/* Service Form */}
-        {form && (
+        {/* {form && (
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-gray-800">
@@ -704,7 +704,7 @@ export default function PaymentForm({
               )}
             </CardContent>
           </Card>
-        )}
+        )} */}
       </div>
 
       {/* Sidebar - Pricing and Payment */}

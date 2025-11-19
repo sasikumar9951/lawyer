@@ -154,7 +154,6 @@ const Navbar = () => {
             </div>
 
             {/* Desktop Navigation */}
-            {/* Desktop Navigation */}
             <div className="hidden lg:flex w-full">
               {/* CENTER — WHITE CAPSULE MENU */}
               <div
@@ -340,31 +339,62 @@ const Navbar = () => {
 
             {/* Mobile Services with Categories */}
             {categories.length > 0 && (
-              <div className="space-y-4">
-                {/* <div className="text-cyan-400 font-semibold">Services</div> */}
-                <div className="space-y-4 ml-2">
-                  {categories.map((category) => (
-                    <Link
-                      key={category.id}
-                      href={`/services/${category.slug}`}
-                      className="flex items-center justify-between text-gray-300 hover:text-cyan-300 transition-colors font-medium"
-                      onClick={handleMobileMenuClose}
-                    >
-                      <span>{category.name}</span>
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </Link>
-                  ))}
-                </div>
+              <div className="space-y-4 ml-2">
+                {categories.map((category) => {
+                  const isExpanded = expandedMobileCategories.includes(
+                    category.name
+                  );
+                  const categoryServices = services.filter(
+                    (s) => s.categoryName === category.name
+                  );
+
+                  return (
+                    <div key={category.id} className="space-y-2">
+                      {/* Category Header */}
+                      <div className="flex items-center justify-between text-gray-300 hover:text-cyan-300 transition-colors font-medium cursor-pointer">
+                        <span>{category.name}</span>
+
+                        {/* Arrow Icon (This toggles dropdown) */}
+                        <button
+                          onClick={() =>
+                            handleMobileCategoryToggle(category.name)
+                          }
+                          className="text-gray-300 hover:text-cyan-300"
+                        >
+                          <svg
+                            className={`w-4 h-4 transform transition-transform ${
+                              isExpanded ? "rotate-90" : ""
+                            }`}
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+
+                      {/* Sub-category List */}
+                      {isExpanded && (
+                        <div className="ml-4 border-l border-gray-700 pl-4 space-y-2">
+                          {categoryServices.map((service) => (
+                            <Link
+                              key={service.id}
+                              href={`/services/${service.categorySlug}/${service.slug}`}
+                              className="block text-gray-400 hover:text-cyan-300"
+                              onClick={handleMobileMenuClose}
+                            >
+                              {service.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

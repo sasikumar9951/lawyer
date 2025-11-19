@@ -70,7 +70,12 @@ export type CallbackType =
   | "PAYMENT_CANCELLED"
   | "TRANSACTION_SETTLED"
   | "TRANSACTION_FAILED"
-  | "CHECKOUT_ORDER_COMPLETED"; // 👈 This fixes the previous error
+  | "CHECKOUT_ORDER_COMPLETED"
+  | "CHECKOUT_ORDER_FAILED"
+  | "PG_REFUND_COMPLETED"
+  | "PG_REFUND_FAILED"
+  | "PG_REFUND_ACCEPTED";
+// 👈 This fixes the previous error
 
 export interface PaymentCallbackRequest {
   authorization: string;

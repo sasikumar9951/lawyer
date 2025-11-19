@@ -189,7 +189,7 @@ export default function PaymentPage() {
         </div>
       </div>
 
-      <ServiceFooter />
+      {/* <ServiceFooter /> */}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { phonepeService } from "@/lib/phonepe";
+import { CallbackType } from "@/types/api/payment";
 import {
   PaymentCallbackRequest,
   PaymentCallbackResponse,

@@ -116,7 +116,9 @@ export const POST = async (request: NextRequest, { params }: Params) => {
               (meeting.linkOrNumber ? ` | ${meeting.linkOrNumber}` : ""),
             status: sendResult.success ? "SENT" : "FAILED",
             twilioMessageSid: sendResult.success ? sendResult.sid : null,
-            errorMessage: sendResult.success ? null : sendResult.error,
+            errorMessage: sendResult.success
+              ? null
+              : (sendResult as any).error || null,
             caseId,
           },
         });
