@@ -25,10 +25,7 @@ export default function LawyerRegistrationPage() {
           phone: COMPANY_CONFIG.contact.phone,
           email: COMPANY_CONFIG.lawyerContact.email,
         }}
-        newsletterTitle="Stay Connected"
-        newsletterDescription="Get updates about new opportunities and legal industry insights."
-        showNewsletter={true}
-        copyrightText="© 2025 Vakilfy - Lawyer Network"
+        copyrightText="© 2025 Vakilfy - developd by 3RP-Technetium"
       />
     </main>
   );

@@ -464,9 +464,6 @@ export default function PrivacyPage() {
           phone: COMPANY_CONFIG.contact.phone,
           email: COMPANY_CONFIG.contact.email,
         }}
-        newsletterTitle={COMPANY_CONFIG.newsletter.title}
-        newsletterDescription={COMPANY_CONFIG.newsletter.description}
-        showNewsletter={true}
         copyrightText={COMPANY_CONFIG.copyright}
       />
     </main>
