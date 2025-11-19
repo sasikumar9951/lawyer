@@ -59,6 +59,19 @@ export interface PaymentStatusResponse {
   message?: string;
 }
 
+// ----------------------------------------------------
+// ADDED NEW TYPE DEFINITION
+// ----------------------------------------------------
+
+export type CallbackType =
+  | "PAYMENT_SUCCESS"
+  | "PAYMENT_FAILED"
+  | "PAYMENT_PENDING"
+  | "PAYMENT_CANCELLED"
+  | "TRANSACTION_SETTLED"
+  | "TRANSACTION_FAILED"
+  | "CHECKOUT_ORDER_COMPLETED"; // 👈 This fixes the previous error
+
 export interface PaymentCallbackRequest {
   authorization: string;
   responseBody: string;
@@ -67,13 +80,15 @@ export interface PaymentCallbackRequest {
 export interface PaymentCallbackResponse {
   success: boolean;
   data?: {
-    type: string;
+    type: CallbackType; // 👈 Updated to use the new CallbackType
     payload: any;
     orderId?: string;
     status?: PaymentStatus;
   };
   message?: string;
 }
+
+// ----------------------------------------------------
 
 export interface PaymentRefundRequest {
   merchantOrderId: string;
