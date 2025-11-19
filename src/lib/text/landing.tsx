@@ -29,7 +29,7 @@ export const landing = {
     "quote": "We built Vakilfy to solve these challenges.",
     "connect": "LET'S CONNECT",
     "phone": "+91 8979096507",
-    "email": "info@vakilfy.com",
+    "email": "hello@vakilfy.com",
     "cta": {
       "book": "Book Consultation Now",
       "explore": "Explore Services",

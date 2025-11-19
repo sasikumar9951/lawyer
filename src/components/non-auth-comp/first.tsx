@@ -89,16 +89,18 @@ const First = () => {
                 <div
                   key={index}
                   onClick={() => handleFeatureClick(index)}
-                  className={`flex items-center space-x-4 cursor-pointer transition-all duration-300 ${activeFeature === index
-                    ? "text-white"
-                    : "text-gray-400 hover:text-gray-300"
-                    }`}
+                  className={`flex items-center space-x-4 cursor-pointer transition-all duration-300 ${
+                    activeFeature === index
+                      ? "text-white"
+                      : "text-gray-400 hover:text-gray-300"
+                  }`}
                 >
                   <div className="relative w-8 h-8 flex items-center justify-center">
                     {/* White dot */}
                     <div
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${activeFeature === index ? "bg-white" : "bg-gray-400"
-                        }`}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        activeFeature === index ? "bg-white" : "bg-gray-400"
+                      }`}
                     />
 
                     {/* Animated loading ring */}
@@ -128,8 +130,9 @@ const First = () => {
                     )}
                   </div>
                   <span
-                    className={`text-lg font-medium transition-all duration-300 font-serif ${activeFeature === index ? "text-white" : "text-gray-400"
-                      }`}
+                    className={`text-lg font-medium transition-all duration-300 font-serif ${
+                      activeFeature === index ? "text-white" : "text-gray-400"
+                    }`}
                   >
                     {feature.title}
                   </span>
@@ -141,8 +144,9 @@ const First = () => {
           {/* Right Side */}
           <div className="flex justify-center lg:justify-end items-center lg:col-span-4">
             <motion.a
-              aria-label="Call us at +91 8979096507"
-              className="relative inline-block group focus:outline-none w-1/2 max-w-xl min-w-[280px]"
+              href="/services"
+              aria-label="Talk to Lawyer! - Redirects to Services Page"
+              className="relative inline-block group focus:outline-none w-[360px] max-w-xl"
               initial="rest"
               animate="rest"
               whileHover="hover"
@@ -160,11 +164,8 @@ const First = () => {
               />
 
               <div className="relative z-10 bg-violet-600 rounded-full pl-20 pr-8 py-5 shadow-xl">
-                <p className="text-white font-bold text-3xl leading-none font-serif">
-                  {landing.first.call.label}
-                </p>
-                <p className="text-white/90 text-lg leading-tight font-serif">
-                  {landing.first.call.phone}
+                <p className="text-white font-bold text-3xl leading-none font-serif whitespace-nowrap">
+                  Talk to Lawyer!
                 </p>
               </div>
 

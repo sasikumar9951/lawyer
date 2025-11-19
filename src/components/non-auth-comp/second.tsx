@@ -58,7 +58,7 @@ const Second = () => {
               {data.second.whyText}
             </p>
 
-            <div className="flex items-start gap-4 mb-10">
+            {/* <div className="flex items-start gap-4 mb-10">
               <div className="text-cyan-600 text-7xl lg:text-8xl leading-none select-none font-serif">
                 “
               </div>
@@ -71,7 +71,7 @@ const Second = () => {
                   {COMPANY_CONFIG.ceo.title}
                 </div>
               </div>
-            </div>
+            </div> */}
 
             <InteractiveHoverButton
               onClick={handleAboutClick}

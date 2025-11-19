@@ -19,12 +19,12 @@ export default function Home() {
       <First />
       <Second />
       <Third />
-      <Fourth />
-      <Fifth />
-      <Sixth />
+      {/* <Fourth /> */}
+      {/* <Fifth /> */}
+      {/* <Sixth /> */}
       <Seventh />
-      <Eighth />
-      <Ninth />
+      {/* <Eighth /> */}
+      {/* <Ninth /> */}
       <Tenth />
     </main>
   );

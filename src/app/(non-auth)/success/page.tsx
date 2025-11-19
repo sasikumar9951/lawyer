@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import ServiceNavbar from "@/components/non-auth-comp/(services)/service-navbar";
 import ServiceFooter from "@/components/non-auth-comp/(services)/service-footer";
@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { PaymentStatusResponse } from "@/types/api/payment";
 
-export default function SuccessPage() {
+function SuccessPageContent() {
   const searchParams = useSearchParams();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [paymentStatus, setPaymentStatus] =
@@ -392,5 +392,14 @@ export default function SuccessPage() {
 
       <ServiceFooter />
     </div>
+  );
+}
+
+// New default export with Suspense
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>} >
+      <SuccessPageContent />
+    </Suspense>
   );
 }

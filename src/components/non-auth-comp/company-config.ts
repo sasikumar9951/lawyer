@@ -6,7 +6,7 @@ export const COMPANY_CONFIG = {
 
   // Contact Information
   contact: {
-    email: "info@vakilfy.com",
+    email: "hello@vakilfy.com",
     phone: "+91 8979096507",
     address: [
       "Space No. 2/2, MD Tower",
@@ -18,7 +18,7 @@ export const COMPANY_CONFIG = {
 
   // Lawyer-specific contact
   lawyerContact: {
-    email: "lawyers@vakilfy.com",
+    email: "hello@vakilfy.com",
   },
 
   // CEO Information
@@ -28,7 +28,7 @@ export const COMPANY_CONFIG = {
   },
 
   // Copyright
-  copyright: "© 2025 design by Vakilfy",
+  copyright: "© 2025 developd by 3RP-Technetium",
 
   // Newsletter
   newsletter: {
