@@ -30,11 +30,6 @@ export const COMPANY_CONFIG = {
   // Copyright
   copyright: "© 2025 developd by 3RP-Technetium",
 
-  // Newsletter
-  newsletter: {
-    title: "Sign Up For Our Newsletter",
-    description: "Stay updated with our latest legal insights and services.",
-  },
 
   // Social Media (if needed in future)
   social: {
