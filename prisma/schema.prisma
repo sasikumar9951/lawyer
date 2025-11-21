@@ -57,14 +57,32 @@ model ServiceCategory {
   id          String   @id @default(cuid())
   name        String   @unique
   slug        String   @unique
-  services    Service[]
+
+  services      Service[]
+  subCategories ServiceSubCategory[]   // ⭐ ADD THIS LINE
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
+model ServiceSubCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+
+  categoryId  String
+  category    ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  services    Service[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([name, categoryId])
+}
+
 model Service {
   id          String   @id @default(cuid())
-  name        String   
+  name        String
   slug        String
   description String?
   isActive    Boolean  @default(true)
@@ -78,21 +96,24 @@ model Service {
   heroTitle     String?   @db.Text
   heroSubtitle  String?   @db.Text
   heroImage     String?   @db.Text
+  contentImage  String?
 
-  contentImage   String? 
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   categoryName  String
   category      ServiceCategory @relation(fields: [categoryName], references: [name], onDelete: Cascade)
-  
-  formId      String
-  form        Form     @relation(fields: [formId], references: [id] , onDelete: Cascade)
+
+  subCategoryId String?
+  subCategory   ServiceSubCategory? @relation(fields: [subCategoryId], references: [id], onDelete: SetNull)
+
+  formId        String
+  form          Form @relation(fields: [formId], references: [id], onDelete: Cascade)
 
   @@unique([name, categoryName])
   @@unique([slug, categoryName])
 }
+
 
 model ServicePrice {
   id          String   @id @default(cuid())

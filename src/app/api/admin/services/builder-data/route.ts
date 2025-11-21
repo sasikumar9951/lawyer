@@ -4,8 +4,8 @@ import { ServiceBuilderDataResponse } from "@/types/api/services";
 
 export async function GET(): Promise<NextResponse<ServiceBuilderDataResponse>> {
   try {
-    // Fetch categories and forms with minimal data
-    const [categories, forms] = await Promise.all([
+    // Fetch categories, subcategories and forms
+    const [categories, subCategories, forms] = await Promise.all([
       prisma.serviceCategory.findMany({
         select: {
           id: true,
@@ -13,6 +13,21 @@ export async function GET(): Promise<NextResponse<ServiceBuilderDataResponse>> {
         },
         orderBy: { name: "asc" },
       }),
+
+      prisma.serviceSubCategory.findMany({
+        select: {
+          id: true,
+          name: true,
+          categoryId: true,
+          category: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        orderBy: { name: "asc" },
+      }),
+
       prisma.form.findMany({
         where: {
           type: "SERVICE_FORM",
@@ -32,6 +47,15 @@ export async function GET(): Promise<NextResponse<ServiceBuilderDataResponse>> {
           id: category.id,
           name: category.name,
         })),
+
+        // ⭐ Important: return subcategory with categoryName
+        subCategories: subCategories.map((sub) => ({
+          id: sub.id,
+          name: sub.name,
+          categoryId: sub.categoryId,
+          categoryName: sub.category.name, // needed for filtering
+        })),
+
         forms: forms.map((form) => ({
           id: form.id,
           name: form.name,
@@ -45,6 +69,7 @@ export async function GET(): Promise<NextResponse<ServiceBuilderDataResponse>> {
         success: false,
         data: {
           categories: [],
+          subCategories: [],
           forms: [],
         },
         message: "Failed to fetch builder data",

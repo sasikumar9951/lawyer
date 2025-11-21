@@ -64,6 +64,8 @@ const ServicesBuilderContent = () => {
   const [serviceDescription, setServiceDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [selectedCategoryName, setSelectedCategoryName] = useState("");
+  const [subCategories, setSubCategories] = useState([]);
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState("");
   const [selectedFormId, setSelectedFormId] = useState("");
   const [prices, setPrices] = useState<PriceStructure[]>([
     { name: "", price: 0, isCompulsory: false },
@@ -83,6 +85,13 @@ const ServicesBuilderContent = () => {
     description: "",
     items: [""],
   });
+
+  const filteredSubCategories = useMemo(() => {
+    return subCategories.filter(
+      (sub) => sub.categoryName === selectedCategoryName
+    );
+  }, [subCategories, selectedCategoryName]);
+
 
 const uploadToS3 = async (file: File): Promise<string | null> => {
   try {
@@ -172,8 +181,10 @@ const uploadToS3 = async (file: File): Promise<string | null> => {
       const data = await response.json();
 
       if (data.success) {
-        setCategories(data.data.categories);
-        setForms(data.data.forms);
+setCategories(data.data.categories);
+setSubCategories(data.data.subCategories || []); 
+setForms(data.data.forms);
+
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -462,6 +473,7 @@ const uploadToS3 = async (file: File): Promise<string | null> => {
           description: serviceDescription.trim() || undefined,
           isActive,
           categoryName: selectedCategoryName,
+          subCategoryId: selectedSubCategoryId,
           formId: selectedFormId,
           heroTitle,
           heroSubtitle,
@@ -503,8 +515,6 @@ const uploadToS3 = async (file: File): Promise<string | null> => {
       fetchServiceForEdit(editServiceId);
     }
   }, [isEditMode, editServiceId]);
-
-  // Remove full page loading - let components handle their own loading states
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -647,6 +657,24 @@ const uploadToS3 = async (file: File): Promise<string | null> => {
                 disabled={isLoadingService}
               />
             </div>
+            {selectedCategoryName && (
+              <div>
+                <Label htmlFor="subcategory">Sub Category *</Label>
+                <SearchableSelect
+                  options={filteredSubCategories.map((sub) => ({
+                    value: sub.id,
+                    label: sub.name,
+                  }))}
+                  value={selectedSubCategoryId}
+                  onValueChange={setSelectedSubCategoryId}
+                  placeholder="Select sub-category"
+                  searchPlaceholder="Search..."
+                  emptyText="No subcategories found"
+                  className="mt-1 w-full"
+                />
+              </div>
+            )}
+
             <div>
               <Label htmlFor="form">Associated Form *</Label>
               <SearchableSelect
