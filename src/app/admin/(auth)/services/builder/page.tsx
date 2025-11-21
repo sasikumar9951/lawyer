@@ -56,6 +56,7 @@ const ServicesBuilderContent = () => {
   const [forms, setForms] = useState<BuilderFormOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [isLoadingService, setIsLoadingService] = useState(false);
 
   // Form state
@@ -67,6 +68,10 @@ const ServicesBuilderContent = () => {
   const [prices, setPrices] = useState<PriceStructure[]>([
     { name: "", price: 0, isCompulsory: false },
   ]);
+  const [heroTitle, setHeroTitle] = useState("");
+  const [heroSubtitle, setHeroSubtitle] = useState("");
+  const [heroImage, setHeroImage] = useState("");
+  const [contentImage, setContentImage] = useState("");
   const [faqs, setFaqs] = useState<FAQ[]>([{ question: "", answer: "" }]);
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
   const [deliverables, setDeliverables] = useState<{
@@ -78,6 +83,58 @@ const ServicesBuilderContent = () => {
     description: "",
     items: [""],
   });
+
+const uploadToS3 = async (file: File): Promise<string | null> => {
+  try {
+    setIsUploading(true); // 1. Get Signed URL
+
+    const res = await fetch("/api/admin/s3/put", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        caseId: "service-assets",
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+      }),
+    });
+
+    const responseData = await res.json();
+    if (!res.ok || !responseData.success) {
+      throw new Error("Failed to get upload URL");
+    }
+
+    const { signedUrl, s3Path } = responseData.data; // 2. Upload to S3 directly using the signed URL
+
+    const uploadRes = await fetch(signedUrl, {
+      method: "PUT",
+      body: file,
+      headers: { "Content-Type": file.type },
+    });
+
+    if (!uploadRes.ok) {
+      throw new Error("Failed to upload to S3");
+    }
+
+    // ============================================================
+    // FIX: Constructing the Full URL manually
+    // ============================================================
+    // உங்க .env ஃபைல்படி சரியான பக்கெட் பெயர் மற்றும் ரீஜியன்
+    const bucketName = "lawyer-development";
+    const region = "ap-south-1";
+
+    // இதுதான் முக்கியம்! https:// சேர்த்து முழு லிங்க் உருவாக்குறோம்
+    const fullUrl = `https://${bucketName}.s3.${region}.amazonaws.com/${s3Path}`;
+
+    return fullUrl;
+  } catch (error) {
+    console.error("Upload error:", error);
+    alert("Failed to upload image. Please try again.");
+    return null;
+  } finally {
+    setIsUploading(false);
+  }
+};
 
   const simpleMdeOptions: EasyMdeOptions = useMemo(
     () => ({
@@ -138,6 +195,10 @@ const ServicesBuilderContent = () => {
         setIsActive(service.isActive);
         setSelectedCategoryName(service.categoryName);
         setSelectedFormId(service.formId);
+        setHeroTitle(service.heroTitle || "");
+        setHeroSubtitle(service.heroSubtitle || "");
+        setHeroImage(service.heroImage || "");
+        setContentImage(service.contentImage ?? "");
 
         // Set prices
         if (service.price && service.price.length > 0) {
@@ -309,6 +370,30 @@ const ServicesBuilderContent = () => {
     });
   };
 
+  const handleHeroImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const url = await uploadToS3(file);
+    if (url) {
+      setHeroImage(url);
+    }
+  };
+
+  const handleContentImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const url = await uploadToS3(file);
+    if (url) {
+      setContentImage(url);
+    }
+  };
+
   const updateDeliverableField = (
     field: "title" | "description",
     value: string
@@ -378,6 +463,10 @@ const ServicesBuilderContent = () => {
           isActive,
           categoryName: selectedCategoryName,
           formId: selectedFormId,
+          heroTitle,
+          heroSubtitle,
+          heroImage,
+          contentImage: contentImage?.trim() ? contentImage : undefined,
           faqs: validFaqs,
           prices: validPrices,
           content:
@@ -484,6 +573,62 @@ const ServicesBuilderContent = () => {
               />
             </div>
           </div>
+          {/* Hero Section */}
+          <div className="border rounded-lg p-4 space-y-4 mt-6">
+            <h3 className="text-lg font-semibold">Hero Section (Banner)</h3>
+
+            <div>
+              <Label>Hero Title</Label>
+              <Input
+                value={heroTitle}
+                onChange={(e) => setHeroTitle(e.target.value)}
+                placeholder="Enter hero title (displayed on service page)"
+                className="mt-1"
+              />
+            </div>
+
+            <div>
+              <Label>Hero Subtitle</Label>
+              <Textarea
+                value={heroSubtitle}
+                onChange={(e) => setHeroSubtitle(e.target.value)}
+                placeholder="Enter subtitle / tagline"
+                className="mt-1"
+              />
+            </div>
+
+            <div>
+              <Label>Hero Image</Label>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleHeroImageUpload}
+              />
+
+              {heroImage && (
+                <img
+                  src={heroImage}
+                  alt="Preview"
+                  className="h-32 mt-3 border rounded-md object-cover"
+                />
+              )}
+            </div>
+          </div>
+          <div>
+            <Label>Content Image</Label>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={handleContentImageUpload}
+            />
+            {contentImage && (
+              <img
+                src={contentImage}
+                className="w-full h-auto max-h-[400px] mt-3 rounded-md border object-contain bg-gray-50"
+              />
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="category">Category *</Label>

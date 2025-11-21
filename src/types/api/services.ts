@@ -97,6 +97,10 @@ export type UpdateServiceRequest = {
   isActive?: boolean;
   categoryName?: string;
   formId?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  heroImage?: string;
+  contentImage?: string;
   faqs?: CreateServiceFAQRequest[];
   prices?: CreateServicePriceRequest[];
   content?: ServiceContent;
@@ -125,6 +129,10 @@ export type ServiceResponse = {
   success: boolean;
   data: ApiService;
   message?: string;
+  heroTitle?: string | null;
+  heroSubtitle?: string | null;
+  heroImage?: string | null;
+  contentImage?: string | null;
 };
 
 // Builder-specific types for minimal data

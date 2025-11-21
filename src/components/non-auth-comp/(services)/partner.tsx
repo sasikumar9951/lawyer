@@ -9,7 +9,13 @@ type PartnerServiceData = ApiService & {
   contentSections?: any;
 };
 
-const Partner = ({ serviceData }: { serviceData?: PartnerServiceData }) => {
+const Partner = ({
+  serviceData,
+  contentImage,
+}: {
+  serviceData?: PartnerServiceData;
+  contentImage?: string;
+}) => {
   const computedAverage = (() => {
     if (typeof serviceData?.averageRating === "number")
       return serviceData.averageRating;
@@ -279,8 +285,12 @@ const Partner = ({ serviceData }: { serviceData?: PartnerServiceData }) => {
       {/* Business Handshake Image */}
       <div className="mt-6 bg-white rounded-lg shadow-2xl p-4">
         <img
-          src="/img1.webp"
-          alt="Business Partnership Handshake"
+          src={
+            contentImage && contentImage.trim() !== ""
+              ? contentImage
+              : "/img1.webp"
+          }
+          alt="Service Section Image"
           className="w-full h-48 object-cover rounded-lg"
         />
       </div>

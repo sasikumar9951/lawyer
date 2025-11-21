@@ -31,6 +31,10 @@ export async function GET(
         formId: true,
         createdAt: true,
         updatedAt: true,
+        heroTitle: true,
+        heroSubtitle: true,
+        heroImage: true,
+        contentImage: true,
         category: {
           select: {
             id: true,
@@ -100,6 +104,10 @@ export async function GET(
         slug: service.slug,
         description: service.description,
         isActive: service.isActive,
+        heroTitle: service.heroTitle,
+        heroSubtitle: service.heroSubtitle,
+        heroImage: service.heroImage,
+        contentImage: service.contentImage,
         contentJson: service.contentJson as ServiceContent | null,
         categoryName: service.categoryName,
         formId: service.formId,
@@ -250,6 +258,13 @@ export async function PUT(
           ...(body.isActive !== undefined && { isActive: body.isActive }),
           ...(body.categoryName && { categoryName: body.categoryName }),
           ...(body.formId && { formId: body.formId }),
+          ...(body.heroTitle !== undefined && { heroTitle: body.heroTitle }),
+          ...(body.heroSubtitle !== undefined && {
+            heroSubtitle: body.heroSubtitle,
+          }),
+          ...(body.heroImage !== undefined && { heroImage: body.heroImage }),
+          ...(body.contentImage ? { contentImage: body.contentImage } : {}),
+
           ...(body.content !== undefined && {
             contentJson: body.content
               ? JSON.parse(JSON.stringify(body.content))
@@ -315,6 +330,10 @@ export async function PUT(
         formId: true,
         createdAt: true,
         updatedAt: true,
+        heroTitle: true,
+        heroSubtitle: true,
+        heroImage: true,
+        contentImage: true,
         category: {
           select: {
             id: true,
@@ -377,6 +396,10 @@ export async function PUT(
         slug: updatedServiceWithRelations.slug,
         description: updatedServiceWithRelations.description,
         isActive: updatedServiceWithRelations.isActive,
+        heroTitle: updatedServiceWithRelations.heroTitle,
+        heroSubtitle: updatedServiceWithRelations.heroSubtitle,
+        heroImage: updatedServiceWithRelations.heroImage,
+        contentImage: updatedServiceWithRelations.contentImage,
         contentJson:
           updatedServiceWithRelations.contentJson as ServiceContent | null,
         categoryName: updatedServiceWithRelations.categoryName,

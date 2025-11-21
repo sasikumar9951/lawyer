@@ -5,34 +5,46 @@ import prisma from "@/lib/prisma";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log("S3 PUT API - Received request:", body);
-    console.log("S3 PUT API - Environment check:", {
-      hasRegion: !!process.env.AWS_REGION,
-      hasAccessKey: !!process.env.AWS_ACCESS_KEY_ID,
-      hasSecretKey: !!process.env.AWS_SECRET_ACCESS_KEY,
-      hasBucket: !!process.env.AWS_S3_BUCKET,
-    });
+
     const { caseId, fileName, fileType, fileSize } = body;
 
     // Validate required fields
     if (!caseId || !fileName || !fileType) {
-      console.log("S3 PUT API - Missing required fields:", {
-        caseId,
-        fileName,
-        fileType,
-      });
       return NextResponse.json(
         { success: false, message: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // Verify case exists
+    // ==========================================
+    // SPECIAL HANDLING FOR SERVICE ASSETS (FIX)
+    // ==========================================
+    // இதுதான் புது மாற்றம்: Service Assets வந்தால் DB-ல் தேட வேண்டாம்
+    if (caseId === "service-assets") {
+      // 1. Generate path directly
+      const s3Path = generateUniqueFilePath("public_assets", fileName);
+
+      // 2. Get Signed URL
+      const signedUrl = await getUploadSignedUrlFromPath(s3Path);
+
+      // 3. Return immediately
+      return NextResponse.json({
+        success: true,
+        data: {
+          fileId: "service-asset-" + Date.now(), // Dummy ID
+          signedUrl,
+          s3Path,
+          fileName,
+        },
+        message: "Service asset upload URL generated",
+      });
+    }
+    // ==========================================
+
+    // Verify case exists (Only for real cases)
     const caseExists = await prisma.case.findUnique({
       where: { id: caseId },
     });
-
-    console.log("S3 PUT API - Case exists:", !!caseExists);
 
     if (!caseExists) {
       return NextResponse.json(
@@ -46,22 +58,16 @@ export async function POST(request: NextRequest) {
 
     // Get signed URL for upload
     const signedUrl = await getUploadSignedUrlFromPath(s3Path);
-    console.log(
-      "S3 PUT API - Generated signed URL:",
-      signedUrl.substring(0, 100) + "..."
-    );
 
-    // Create file record in database
+    // Create file record in database (Only for cases)
     const fileRecord = await prisma.caseFiles.create({
       data: {
         caseId,
         name: fileName,
         s3Path,
-        fileUrl: null, // We don't store public URLs, everything is private
+        fileUrl: null,
       },
     });
-
-    console.log("S3 PUT API - Created file record:", fileRecord);
 
     return NextResponse.json({
       success: true,

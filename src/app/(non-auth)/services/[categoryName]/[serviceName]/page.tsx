@@ -40,6 +40,10 @@ export default async function ServiceDetailPage({ params }: Params) {
       slug: true,
       description: true,
       isActive: true,
+      heroTitle: true,
+      heroSubtitle: true,
+      heroImage: true,
+      contentImage: true,
       contentJson: true,
       categoryName: true,
       formId: true,
@@ -121,6 +125,10 @@ export default async function ServiceDetailPage({ params }: Params) {
   const { _count, ...serviceWithoutCount } = service;
   const transformedServiceData = {
     ...serviceWithoutCount,
+    heroTitle: service.heroTitle,
+    heroSubtitle: service.heroSubtitle,
+    heroImage: service.heroImage,
+    contentImage: service.contentImage,
     averageRating: Number((averageRating._avg.rating ?? 0).toFixed(1)),
     reviewCount: _count.rating,
     customerCount: _count.cases,
@@ -187,14 +195,17 @@ export default async function ServiceDetailPage({ params }: Params) {
       <div className="pt-20 sm:pt-24 lg:pt-28 flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* S1 Component - Business Partnership Section */}
-          <S1 />
+          <S1 serviceData={transformedServiceData} />
 
           {/* Partner and Company Formation Section */}
           <div className="py-6 sm:py-8 lg:py-12">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
               {/* Left Side - Partner Component + FAQ + Carousel (Scrollable) */}
               <div className="lg:col-span-2 space-y-6 lg:space-y-8">
-                <Partner serviceData={transformedServiceData} />
+                <Partner
+                  serviceData={transformedServiceData}
+                  contentImage={transformedServiceData.contentImage}
+                />
                 <div className="bg-white rounded-lg shadow-xl p-6">
                   <Faq serviceData={transformedServiceData} />
                 </div>
