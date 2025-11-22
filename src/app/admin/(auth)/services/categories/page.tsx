@@ -234,7 +234,8 @@ export default function CategoriesPage() {
             <FolderTree className="w-8 h-8 text-primary" /> Categories
           </h1>
           <p className="text-gray-500">
-            Add or edit categories and sub-categories from the admin page for each service.
+            Add or edit categories and sub-categories from the admin page for
+            each service.
           </p>
         </div>
 
@@ -453,8 +454,8 @@ export default function CategoriesPage() {
                   ? "Edit Category"
                   : "Edit Sub-Category"
                 : creationType === "CATEGORY"
-                ? "Create New Category"
-                : "Create New"}
+                  ? "Create New Category"
+                  : "Create New"}
             </DialogTitle>
             <DialogDescription>
               {editingId
@@ -462,8 +463,8 @@ export default function CategoriesPage() {
                   ? "Edit the category name."
                   : "Edit the sub-category name."
                 : creationType === "CATEGORY"
-                ? "Add a new service category to organize your services."
-                : "Add a Main Category or a Sub-Category."}
+                  ? "Add a new service category to organize your services."
+                  : "Add a Main Category or a Sub-Category."}
             </DialogDescription>
           </DialogHeader>
 
@@ -541,7 +542,9 @@ export default function CategoriesPage() {
                   </div>
                   <div
                     className={`flex-1 border rounded-md p-3 cursor-pointer text-center transition-colors bg-primary/10 border-primary font-medium text-primary ${editingId ? "opacity-50 pointer-events-none" : ""}`}
-                    onClick={() => !editingId && setCreationType("SUB_CATEGORY")}
+                    onClick={() =>
+                      !editingId && setCreationType("SUB_CATEGORY")
+                    }
                   >
                     Sub-Category
                   </div>

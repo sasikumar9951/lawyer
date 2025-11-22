@@ -59,7 +59,10 @@ export async function DELETE(
 ): Promise<NextResponse<{ success: boolean; message?: string }>> {
   try {
     const body = await request.json();
-    const { id, type } = body as { id?: string; type?: "CATEGORY" | "SUB_CATEGORY" };
+    const { id, type } = body as {
+      id?: string;
+      type?: "CATEGORY" | "SUB_CATEGORY";
+    };
 
     if (!id || !type) {
       return NextResponse.json(
@@ -69,7 +72,9 @@ export async function DELETE(
     }
 
     if (type === "CATEGORY") {
-      const existing = await prisma.serviceCategory.findUnique({ where: { id } });
+      const existing = await prisma.serviceCategory.findUnique({
+        where: { id },
+      });
       if (!existing) {
         return NextResponse.json(
           { success: false, message: "Category not found" },
@@ -84,7 +89,9 @@ export async function DELETE(
     }
 
     // SUB_CATEGORY
-    const existingSub = await prisma.serviceSubCategory.findUnique({ where: { id } });
+    const existingSub = await prisma.serviceSubCategory.findUnique({
+      where: { id },
+    });
     if (!existingSub) {
       return NextResponse.json(
         { success: false, message: "Sub-category not found" },
@@ -93,7 +100,10 @@ export async function DELETE(
     }
 
     await prisma.serviceSubCategory.delete({ where: { id } });
-    return NextResponse.json({ success: true, message: "Sub-category deleted" });
+    return NextResponse.json({
+      success: true,
+      message: "Sub-category deleted",
+    });
   } catch (error) {
     console.error("Error deleting category/sub-category:", error);
     return NextResponse.json(

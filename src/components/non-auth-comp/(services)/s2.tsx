@@ -12,7 +12,12 @@ type Slide = {
 const S2 = ({
   testimonials,
 }: {
-  testimonials?: { id: string; text: string; author?: string | null; role?: string | null }[];
+  testimonials?: {
+    id: string;
+    text: string;
+    author?: string | null;
+    role?: string | null;
+  }[];
 }) => {
   const slides: Slide[] = useMemo(() => {
     if (testimonials && testimonials.length > 0) {
@@ -68,15 +73,21 @@ const S2 = ({
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {slides.map((slide) => (
-            <div key={slide.id} className="w-full shrink-0 px-6 py-10 sm:px-10 sm:py-14">
+            <div
+              key={slide.id}
+              className="w-full shrink-0 px-6 py-10 sm:px-10 sm:py-14"
+            >
               <div className="mx-auto max-w-3xl text-center">
-                <p className="mt-4 text-lg leading-8 text-gray-700">{slide.quote}</p>
+                <p className="mt-4 text-lg leading-8 text-gray-700">
+                  {slide.quote}
+                </p>
                 <div className="mt-8 flex items-center justify-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-400 font-bold text-gray-800">
                     {slide.author.charAt(0)}
                   </div>
                   <p className="font-semibold text-gray-900">
-                    {slide.author}, <span className="text-gray-600">{slide.location}</span>
+                    {slide.author},{" "}
+                    <span className="text-gray-600">{slide.location}</span>
                   </p>
                 </div>
               </div>
@@ -90,7 +101,15 @@ const S2 = ({
             aria-label="Previous testimonial"
             className="rounded-full p-2 text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
@@ -113,7 +132,15 @@ const S2 = ({
             aria-label="Next testimonial"
             className="rounded-full p-2 text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M9 18l6-6-6-6" />
             </svg>
           </button>

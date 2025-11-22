@@ -167,10 +167,13 @@ export async function GET(
     // Fetch testimonials separately (prisma client may need to be regenerated locally)
     try {
       if (service) {
-        const tItems = await (prisma as any).serviceTestimonial.findMany({ where: { serviceId: service.id }, orderBy: { order: 'asc' } });
-        (response => {
-          /* noop to keep types stable */
+        const tItems = await (prisma as any).serviceTestimonial.findMany({
+          where: { serviceId: service.id },
+          orderBy: { order: "asc" },
         });
+        (response) => {
+          /* noop to keep types stable */
+        };
         // attach testimonials
         // convert to plain objects
         const tMapped = tItems.map((t: any) => ({
@@ -244,7 +247,7 @@ export async function GET(
         });
       }
     } catch (err) {
-      console.error('Failed to load testimonials', err);
+      console.error("Failed to load testimonials", err);
     }
   } catch (error) {
     console.error("Error fetching service:", error);

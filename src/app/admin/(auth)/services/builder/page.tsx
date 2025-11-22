@@ -90,8 +90,15 @@ const ServicesBuilderContent = () => {
   const [testimonials, setTestimonials] = useState<ApiServiceTestimonial[]>([]);
   const [isLoadingTestimonials, setIsLoadingTestimonials] = useState(false);
   const [isTestimonialDialogOpen, setIsTestimonialDialogOpen] = useState(false);
-  const [editingTestimonial, setEditingTestimonial] = useState<ApiServiceTestimonial | null>(null);
-  const [testimonialForm, setTestimonialForm] = useState({ author: "", role: "", text: "", rating: 0, isFeatured: false });
+  const [editingTestimonial, setEditingTestimonial] =
+    useState<ApiServiceTestimonial | null>(null);
+  const [testimonialForm, setTestimonialForm] = useState({
+    author: "",
+    role: "",
+    text: "",
+    rating: 0,
+    isFeatured: false,
+  });
 
   const filteredSubCategories = useMemo(() => {
     return subCategories.filter(
@@ -99,58 +106,57 @@ const ServicesBuilderContent = () => {
     );
   }, [subCategories, selectedCategoryName]);
 
+  const uploadToS3 = async (file: File): Promise<string | null> => {
+    try {
+      setIsUploading(true); // 1. Get Signed URL
 
-const uploadToS3 = async (file: File): Promise<string | null> => {
-  try {
-    setIsUploading(true); // 1. Get Signed URL
+      const res = await fetch("/api/admin/s3/put", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          caseId: "service-assets",
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+        }),
+      });
 
-    const res = await fetch("/api/admin/s3/put", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        caseId: "service-assets",
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
-      }),
-    });
+      const responseData = await res.json();
+      if (!res.ok || !responseData.success) {
+        throw new Error("Failed to get upload URL");
+      }
 
-    const responseData = await res.json();
-    if (!res.ok || !responseData.success) {
-      throw new Error("Failed to get upload URL");
+      const { signedUrl, s3Path } = responseData.data; // 2. Upload to S3 directly using the signed URL
+
+      const uploadRes = await fetch(signedUrl, {
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": file.type },
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error("Failed to upload to S3");
+      }
+
+      // ============================================================
+      // FIX: Constructing the Full URL manually
+      // ============================================================
+      // Use the correct bucket name and region (from your .env configuration)
+      const bucketName = "lawyer-development";
+      const region = "ap-south-1";
+
+      // Construct the full S3 URL
+      const fullUrl = `https://${bucketName}.s3.${region}.amazonaws.com/${s3Path}`;
+
+      return fullUrl;
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Failed to upload image. Please try again.");
+      return null;
+    } finally {
+      setIsUploading(false);
     }
-
-    const { signedUrl, s3Path } = responseData.data; // 2. Upload to S3 directly using the signed URL
-
-    const uploadRes = await fetch(signedUrl, {
-      method: "PUT",
-      body: file,
-      headers: { "Content-Type": file.type },
-    });
-
-    if (!uploadRes.ok) {
-      throw new Error("Failed to upload to S3");
-    }
-
-    // ============================================================
-    // FIX: Constructing the Full URL manually
-    // ============================================================
-    // Use the correct bucket name and region (from your .env configuration)
-    const bucketName = "lawyer-development";
-    const region = "ap-south-1";
-
-    // Construct the full S3 URL
-    const fullUrl = `https://${bucketName}.s3.${region}.amazonaws.com/${s3Path}`;
-
-    return fullUrl;
-  } catch (error) {
-    console.error("Upload error:", error);
-    alert("Failed to upload image. Please try again.");
-    return null;
-  } finally {
-    setIsUploading(false);
-  }
-};
+  };
 
   const simpleMdeOptions: EasyMdeOptions = useMemo(
     () => ({
@@ -203,7 +209,6 @@ const uploadToS3 = async (file: File): Promise<string | null> => {
 
         setSubCategories(flattenedSubCategories);
         setForms(data.data.forms);
-
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -410,6 +415,19 @@ const uploadToS3 = async (file: File): Promise<string | null> => {
     const url = await uploadToS3(file);
     if (url) {
       setHeroImage(url);
+
+      // If editing an existing service, persist heroImage immediately
+      if (isEditMode && editServiceId) {
+        try {
+          await fetch(`/api/admin/services/${editServiceId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ heroImage: url }),
+          });
+        } catch (err) {
+          console.error("Failed to persist heroImage:", err);
+        }
+      }
     }
   };
 
@@ -422,6 +440,24 @@ const uploadToS3 = async (file: File): Promise<string | null> => {
     const url = await uploadToS3(file);
     if (url) {
       setContentImage(url);
+
+      // If editing an existing service, persist contentImage immediately
+      if (isEditMode && editServiceId) {
+        try {
+          const resp = await fetch(`/api/admin/services/${editServiceId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contentImage: url }),
+          });
+
+          const respJson = await resp.json().catch(() => null);
+          if (!resp.ok || !respJson || !respJson.success) {
+            console.error("Failed to persist contentImage (server):", respJson);
+          }
+        } catch (err) {
+          console.error("Failed to persist contentImage:", err);
+        }
+      }
     }
   };
 
@@ -922,17 +958,66 @@ const uploadToS3 = async (file: File): Promise<string | null> => {
               <div className="text-sm text-gray-500">No testimonials yet.</div>
             ) : (
               testimonials.map((t) => (
-                <div key={t.id} className="border rounded-lg p-3 flex justify-between items-start">
+                <div
+                  key={t.id}
+                  className="border rounded-lg p-3 flex justify-between items-start"
+                >
                   <div>
-                    <div className="font-medium">{t.author || "Anonymous"} {t.role ? <span className="text-sm text-gray-500">— {t.role}</span> : null}</div>
+                    <div className="font-medium">
+                      {t.author || "Anonymous"}{" "}
+                      {t.role ? (
+                        <span className="text-sm text-gray-500">
+                          — {t.role}
+                        </span>
+                      ) : null}
+                    </div>
                     <div className="text-sm text-gray-700 mt-2">{t.text}</div>
-                    {t.rating ? <div className="text-xs text-gray-500 mt-2">Rating: {t.rating}</div> : null}
+                    {t.rating ? (
+                      <div className="text-xs text-gray-500 mt-2">
+                        Rating: {t.rating}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex flex-col gap-2 ml-4">
-                    <Button variant="outline" size="sm" onClick={() => { setEditingTestimonial(t); setTestimonialForm({ author: t.author || "", role: t.role || "", text: t.text, rating: t.rating || 0, isFeatured: t.isFeatured }); setIsTestimonialDialogOpen(true); }}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditingTestimonial(t);
+                        setTestimonialForm({
+                          author: t.author || "",
+                          role: t.role || "",
+                          text: t.text,
+                          rating: t.rating || 0,
+                          isFeatured: t.isFeatured,
+                        });
+                        setIsTestimonialDialogOpen(true);
+                      }}
+                    >
                       Edit
                     </Button>
-                    <Button variant="destructive" size="sm" onClick={async () => { if (!confirm('Delete testimonial?')) return; try { const res = await fetch(`/api/admin/services/testimonials/${t.id}`, { method: 'DELETE' }); const d = await res.json(); if (d.success) setTestimonials(testimonials.filter(x=>x.id!==t.id)); else alert('Delete failed'); } catch(e){console.error(e); alert('Delete failed')} }}>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={async () => {
+                        if (!confirm("Delete testimonial?")) return;
+                        try {
+                          const res = await fetch(
+                            `/api/admin/services/testimonials/${t.id}`,
+                            { method: "DELETE" }
+                          );
+                          const d = await res.json();
+                          if (d.success)
+                            setTestimonials(
+                              testimonials.filter((x) => x.id !== t.id)
+                            );
+                          else alert("Delete failed");
+                        } catch (e) {
+                          console.error(e);
+                          alert("Delete failed");
+                        }
+                      }}
+                    >
                       Delete
                     </Button>
                   </div>
@@ -941,7 +1026,20 @@ const uploadToS3 = async (file: File): Promise<string | null> => {
             )}
 
             <div>
-              <Button variant="outline" onClick={() => { setEditingTestimonial(null); setTestimonialForm({ author: "", role: "", text: "", rating: 0, isFeatured: false }); setIsTestimonialDialogOpen(true); }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEditingTestimonial(null);
+                  setTestimonialForm({
+                    author: "",
+                    role: "",
+                    text: "",
+                    rating: 0,
+                    isFeatured: false,
+                  });
+                  setIsTestimonialDialogOpen(true);
+                }}
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Testimonial
               </Button>
@@ -953,44 +1051,105 @@ const uploadToS3 = async (file: File): Promise<string | null> => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label>Author</Label>
-                    <Input value={testimonialForm.author} onChange={(e) => setTestimonialForm({...testimonialForm, author: e.target.value})} className="mt-1" />
+                    <Input
+                      value={testimonialForm.author}
+                      onChange={(e) =>
+                        setTestimonialForm({
+                          ...testimonialForm,
+                          author: e.target.value,
+                        })
+                      }
+                      className="mt-1"
+                    />
                   </div>
                   <div>
                     <Label>Role / Location</Label>
-                    <Input value={testimonialForm.role} onChange={(e) => setTestimonialForm({...testimonialForm, role: e.target.value})} className="mt-1" />
+                    <Input
+                      value={testimonialForm.role}
+                      onChange={(e) =>
+                        setTestimonialForm({
+                          ...testimonialForm,
+                          role: e.target.value,
+                        })
+                      }
+                      className="mt-1"
+                    />
                   </div>
                 </div>
                 <div className="mt-3">
                   <Label>Text</Label>
-                  <Textarea value={testimonialForm.text} onChange={(e) => setTestimonialForm({...testimonialForm, text: e.target.value})} className="mt-1" />
+                  <Textarea
+                    value={testimonialForm.text}
+                    onChange={(e) =>
+                      setTestimonialForm({
+                        ...testimonialForm,
+                        text: e.target.value,
+                      })
+                    }
+                    className="mt-1"
+                  />
                 </div>
                 <div className="flex justify-end gap-2 mt-3">
-                  <Button variant="outline" onClick={() => setIsTestimonialDialogOpen(false)}>Cancel</Button>
-                  <Button onClick={async () => {
-                    if (!testimonialForm.text.trim()) { alert('Text is required'); return; }
-                    try {
-                      if (editingTestimonial) {
-                        const res = await fetch(`/api/admin/services/testimonials/${editingTestimonial.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...testimonialForm }) });
-                        const d = await res.json();
-                        if (d.success) {
-                          setTestimonials(testimonials.map(t => t.id === d.data.id ? d.data : t));
-                          setIsTestimonialDialogOpen(false);
-                        } else {
-                          alert(d.message || 'Update failed');
-                        }
-                      } else {
-                        const res = await fetch('/api/admin/services/testimonials', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ serviceId: editServiceId, ...testimonialForm }) });
-                        const d = await res.json();
-                        if (d.success) {
-                          setTestimonials([d.data, ...testimonials]);
-                          setIsTestimonialDialogOpen(false);
-                        } else {
-                          alert(d.message || 'Create failed');
-                        }
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsTestimonialDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      if (!testimonialForm.text.trim()) {
+                        alert("Text is required");
+                        return;
                       }
-                    } catch (e) { console.error(e); alert('Operation failed') }
-                  }}>
-                    {editingTestimonial ? 'Update' : 'Create'}
+                      try {
+                        if (editingTestimonial) {
+                          const res = await fetch(
+                            `/api/admin/services/testimonials/${editingTestimonial.id}`,
+                            {
+                              method: "PUT",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ ...testimonialForm }),
+                            }
+                          );
+                          const d = await res.json();
+                          if (d.success) {
+                            setTestimonials(
+                              testimonials.map((t) =>
+                                t.id === d.data.id ? d.data : t
+                              )
+                            );
+                            setIsTestimonialDialogOpen(false);
+                          } else {
+                            alert(d.message || "Update failed");
+                          }
+                        } else {
+                          const res = await fetch(
+                            "/api/admin/services/testimonials",
+                            {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                serviceId: editServiceId,
+                                ...testimonialForm,
+                              }),
+                            }
+                          );
+                          const d = await res.json();
+                          if (d.success) {
+                            setTestimonials([d.data, ...testimonials]);
+                            setIsTestimonialDialogOpen(false);
+                          } else {
+                            alert(d.message || "Create failed");
+                          }
+                        }
+                      } catch (e) {
+                        console.error(e);
+                        alert("Operation failed");
+                      }
+                    }}
+                  >
+                    {editingTestimonial ? "Update" : "Create"}
                   </Button>
                 </div>
               </div>

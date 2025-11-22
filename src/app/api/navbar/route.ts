@@ -89,8 +89,12 @@ export async function GET(): Promise<NextResponse<NavbarDataResponse>> {
           categoryName: service.category.name,
           categorySlug: service.category.slug,
           subCategoryId: service.subCategory ? service.subCategory.id : null,
-          subCategoryName: service.subCategory ? service.subCategory.name : null,
-          subCategorySlug: service.subCategory ? service.subCategory.slug : null,
+          subCategoryName: service.subCategory
+            ? service.subCategory.name
+            : null,
+          subCategorySlug: service.subCategory
+            ? service.subCategory.slug
+            : null,
         })),
       },
     });

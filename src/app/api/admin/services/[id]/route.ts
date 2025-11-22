@@ -192,32 +192,93 @@ export async function PUT(
     const { id } = await params;
     const body = await req.json();
 
+    // Debug: log incoming body to help investigate missing contentImage
+    console.debug("[admin/services/[id] PUT] incoming body:", body);
+
     // ... validation ...
+
+    // Build update payload conditionally so we don't overwrite fields unintentionally
+    const updateData: any = {
+      name: body.name,
+      slug: body.slug,
+      description:
+        typeof body.description !== "undefined" ? body.description : undefined,
+      isActive:
+        typeof body.isActive !== "undefined" ? body.isActive : undefined,
+      form: body.formId ? { connect: { id: body.formId } } : undefined,
+      // Hero fields
+      heroTitle:
+        typeof body.heroTitle !== "undefined" ? body.heroTitle : undefined,
+      heroSubtitle:
+        typeof body.heroSubtitle !== "undefined"
+          ? body.heroSubtitle
+          : undefined,
+      heroImage:
+        typeof body.heroImage !== "undefined" ? body.heroImage : undefined,
+    };
+
+    // Sub-category: connect or disconnect explicitly
+    if (typeof body.subCategoryId !== "undefined") {
+      if (body.subCategoryId)
+        updateData.subCategory = { connect: { id: body.subCategoryId } };
+      else updateData.subCategory = { disconnect: true };
+    }
+
+    // Content image: only set if provided by client (to avoid accidental overwrite)
+    if (typeof body.contentImage !== "undefined") {
+      updateData.contentImage = body.contentImage || null;
+    }
+
+    // Content JSON
+    if (typeof body.content !== "undefined") {
+      updateData.contentJson = body.content
+        ? JSON.parse(JSON.stringify(body.content))
+        : null;
+    }
 
     const service = await prisma.service.update({
       where: { id },
-      data: {
-        name: body.name,
-        slug: body.slug,
-        description: body.description,
-        isActive: body.isActive,
-        
-        // ⭐ Update Sub-Category (Handle Connect or Disconnect)
-        subCategory: body.subCategoryId 
-          ? { connect: { id: body.subCategoryId } }
-          : { disconnect: true },
-
-        // Note: Category cannot be easily changed if it's part of unique constraint with name/slug
-        // If you allow changing category, you need to handle categoryName field update too.
-        
-        form: { connect: { id: body.formId } },
-        // ... content update ...
+      data: updateData,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        isActive: true,
+        contentJson: true,
+        categoryName: true,
+        formId: true,
+        createdAt: true,
+        updatedAt: true,
+        heroTitle: true,
+        heroSubtitle: true,
+        heroImage: true,
+        contentImage: true,
+        category: true,
+        subCategoryId: true,
+        subCategory: true,
+        faqs: true,
+        price: true,
+        rating: true,
       },
     });
 
+    console.debug(
+      `[admin/services/[id] PUT] updated service ${service.id} contentImage:`,
+      service.contentImage
+    );
+
     return NextResponse.json({ success: true, data: service });
   } catch (error) {
-    // ... error handling
+    console.error("Error updating service:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        data: {} as any,
+        message: "Failed to update service",
+      },
+      { status: 500 }
+    );
   }
 }
 
