@@ -52,6 +52,19 @@ export type ApiServiceRating = {
   updatedAt: string;
 };
 
+export type ApiServiceTestimonial = {
+  id: string;
+  serviceId: string;
+  author?: string | null;
+  role?: string | null;
+  text: string;
+  rating?: number | null;
+  isFeatured: boolean;
+  order?: number | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 // ==========================================
 // Main Service Type (Updated)
 // ==========================================
@@ -89,6 +102,7 @@ export type ApiService = {
   faqs?: ApiServiceFAQ[];
   price?: ApiServicePrice[];
   rating?: ApiServiceRating[];
+  testimonials?: ApiServiceTestimonial[];
 
   createdAt: string;
   updatedAt: string;

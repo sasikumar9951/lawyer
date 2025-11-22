@@ -9,9 +9,22 @@ type Slide = {
   location: string;
 };
 
-const S2 = () => {
-  const slides: Slide[] = useMemo(
-    () => [
+const S2 = ({
+  testimonials,
+}: {
+  testimonials?: { id: string; text: string; author?: string | null; role?: string | null }[];
+}) => {
+  const slides: Slide[] = useMemo(() => {
+    if (testimonials && testimonials.length > 0) {
+      return testimonials.map((t) => ({
+        id: t.id,
+        quote: t.text,
+        author: t.author || "Anonymous",
+        location: t.role || "",
+      }));
+    }
+
+    return [
       {
         id: "1",
         quote:
@@ -26,9 +39,8 @@ const S2 = () => {
         author: "A. Sharma",
         location: "Mumbai",
       },
-    ],
-    []
-  );
+    ];
+  }, [testimonials]);
 
   const [currentIndex, setCurrentIndex] = useState<number>(0);
 

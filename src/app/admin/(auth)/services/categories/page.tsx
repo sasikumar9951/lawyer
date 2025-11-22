@@ -234,14 +234,14 @@ export default function CategoriesPage() {
             <FolderTree className="w-8 h-8 text-primary" /> Categories
           </h1>
           <p className="text-gray-500">
-            Manage service categories and sub-categories
+            Add or edit categories and sub-categories from the admin page for each service.
           </p>
         </div>
 
-        {/* Main "Add New" Button (Opens dialog for Main Category) */}
-        <Button onClick={handleCreateNewClick}>
+        {/* Main "Create Category" Button (Opens dialog for Main Category) */}
+        <Button variant="outline" onClick={handleCreateNewClick}>
           <Plus className="w-4 h-4 mr-2" />
-          Add New
+          Create Category
         </Button>
       </div>
 
@@ -448,87 +448,156 @@ export default function CategoriesPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingId ? "Edit Category" : "Create New"}
+              {editingId
+                ? creationType === "CATEGORY"
+                  ? "Edit Category"
+                  : "Edit Sub-Category"
+                : creationType === "CATEGORY"
+                ? "Create New Category"
+                : "Create New"}
             </DialogTitle>
             <DialogDescription>
               {editingId
-                ? "Update details"
+                ? creationType === "CATEGORY"
+                  ? "Edit the category name."
+                  : "Edit the sub-category name."
+                : creationType === "CATEGORY"
+                ? "Add a new service category to organize your services."
                 : "Add a Main Category or a Sub-Category."}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            {/* Type Selection - Disabled if editing specific type or clicking specific add button */}
-            <div className="space-y-2">
-              <Label>Type</Label>
-              <div className="flex gap-4">
-                <div
-                  className={`flex-1 border rounded-md p-3 cursor-pointer text-center transition-colors ${creationType === "CATEGORY" ? "bg-primary/10 border-primary font-medium text-primary" : "hover:bg-gray-50"} ${editingId || creationType === "SUB_CATEGORY" ? "opacity-50 pointer-events-none" : ""}`}
-                  onClick={() => !editingId && setCreationType("CATEGORY")}
+
+          {/* If editing, show name-only editor (no type toggles). If creating a main category, show the simple create modal. Otherwise show full UI for sub-category creation. */}
+          {editingId ? (
+            <div className="space-y-4">
+              <div>
+                <Label>Name</Label>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={
+                    creationType === "CATEGORY"
+                      ? "e.g. Corporate Law"
+                      : "e.g. Pvt Ltd Registration"
+                  }
+                  className="mt-1"
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleCloseDialog}
+                  disabled={isSubmitting}
                 >
-                  Main Category
-                </div>
-                <div
-                  className={`flex-1 border rounded-md p-3 cursor-pointer text-center transition-colors ${creationType === "SUB_CATEGORY" ? "bg-primary/10 border-primary font-medium text-primary" : "hover:bg-gray-50"} ${editingId || creationType === "CATEGORY" ? "opacity-50 pointer-events-none" : ""}`}
-                  onClick={() => !editingId && setCreationType("SUB_CATEGORY")}
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting || !name.trim()}
                 >
-                  Sub-Category
-                </div>
+                  {isSubmitting ? "Saving..." : "Update"}
+                </Button>
               </div>
             </div>
-
-            {/* Parent Selection (Only for Sub-Category) */}
-            {creationType === "SUB_CATEGORY" && (
-              <div className="space-y-2 animate-in fade-in zoom-in-95 duration-200">
-                <Label>Select Parent Category</Label>
-                <Select
-                  value={selectedParentId}
-                  onValueChange={setSelectedParentId}
-                  disabled={!!editingId || !!selectedParentId}
-                >
-                  <SelectTrigger className="bg-gray-50">
-                    <SelectValue placeholder="Select parent..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          ) : creationType === "CATEGORY" ? (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="categoryName">Category Name</Label>
+                <Input
+                  id="categoryName"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter category name"
+                  className="mt-1"
+                />
               </div>
-            )}
-
-            {/* Name Input */}
-            <div className="space-y-2">
-              <Label>Name</Label>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={
-                  creationType === "CATEGORY"
-                    ? "e.g. Corporate Law"
-                    : "e.g. Pvt Ltd Registration"
-                }
-              />
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleCloseDialog}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting || !name.trim()}
+                >
+                  {isSubmitting ? "Saving..." : "Create"}
+                </Button>
+              </div>
             </div>
+          ) : (
+            <div className="space-y-4 py-2">
+              {/* Type Selection - Disabled if editing specific type or clicking specific add button */}
+              <div className="space-y-2">
+                <Label>Type</Label>
+                <div className="flex gap-4">
+                  <div
+                    className={`flex-1 border rounded-md p-3 cursor-pointer text-center transition-colors hover:bg-gray-50 ${editingId ? "opacity-50 pointer-events-none" : ""}`}
+                    onClick={() => !editingId && setCreationType("CATEGORY")}
+                  >
+                    Main Category
+                  </div>
+                  <div
+                    className={`flex-1 border rounded-md p-3 cursor-pointer text-center transition-colors bg-primary/10 border-primary font-medium text-primary ${editingId ? "opacity-50 pointer-events-none" : ""}`}
+                    onClick={() => !editingId && setCreationType("SUB_CATEGORY")}
+                  >
+                    Sub-Category
+                  </div>
+                </div>
+              </div>
 
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={handleCloseDialog}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={isSubmitting || !name.trim()}
-              >
-                {isSubmitting ? "Saving..." : editingId ? "Update" : "Create"}
-              </Button>
+              {/* Parent Selection (Only for Sub-Category) */}
+              {creationType === "SUB_CATEGORY" && (
+                <div className="space-y-2 animate-in fade-in zoom-in-95 duration-200">
+                  <Label>Select Parent Category</Label>
+                  <Select
+                    value={selectedParentId}
+                    onValueChange={setSelectedParentId}
+                    disabled={!!editingId || !!selectedParentId}
+                  >
+                    <SelectTrigger className="bg-gray-50">
+                      <SelectValue placeholder="Select parent..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Name Input */}
+              <div className="space-y-2">
+                <Label>Name</Label>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={"e.g. Pvt Ltd Registration"}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleCloseDialog}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting || !name.trim()}
+                >
+                  {isSubmitting ? "Saving..." : editingId ? "Update" : "Create"}
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </DialogContent>
       </Dialog>
 

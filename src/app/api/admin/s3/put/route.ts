@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     // ==========================================
     // SPECIAL HANDLING FOR SERVICE ASSETS (FIX)
     // ==========================================
-    // இதுதான் புது மாற்றம்: Service Assets வந்தால் DB-ல் தேட வேண்டாம்
+    // Skip DB lookup for service asset uploads and generate path directly
     if (caseId === "service-assets") {
       // 1. Generate path directly
       const s3Path = generateUniqueFilePath("public_assets", fileName);

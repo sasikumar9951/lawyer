@@ -38,7 +38,7 @@ export async function GET(): Promise<NextResponse<ServiceBuilderDataResponse>> {
     return NextResponse.json({
       success: true,
       data: {
-        // Categories உள்ளேயே SubCategories இருக்கும்
+        // Categories include nested SubCategories
         categories: categories.map((category) => ({
           id: category.id,
           name: category.name,

@@ -87,6 +87,20 @@ export default async function ServiceDetailPage({ params }: Params) {
           updatedAt: true,
         },
       },
+                testimonials: {
+                  select: {
+                    id: true,
+                    serviceId: true,
+                    author: true,
+                    role: true,
+                    text: true,
+                    rating: true,
+                    isFeatured: true,
+                    order: true,
+                    createdAt: true,
+                    updatedAt: true,
+                  },
+                },
       rating: {
         select: {
           id: true,
@@ -160,6 +174,20 @@ export default async function ServiceDetailPage({ params }: Params) {
       createdAt: faq.createdAt.toISOString(),
       updatedAt: faq.updatedAt.toISOString(),
     })),
+    // Testimonials
+      testimonials:
+        service.testimonials?.map((t) => ({
+          id: t.id,
+          serviceId: t.serviceId,
+          author: t.author || null,
+          role: t.role || null,
+          text: t.text,
+          rating: t.rating || null,
+          isFeatured: t.isFeatured,
+          order: t.order || null,
+          createdAt: t.createdAt.toISOString(),
+          updatedAt: t.updatedAt.toISOString(),
+        })) || [],
     // Transform dates to strings
     createdAt: service.createdAt.toISOString(),
     updatedAt: service.updatedAt.toISOString(),
@@ -211,7 +239,7 @@ export default async function ServiceDetailPage({ params }: Params) {
                   <Faq serviceData={transformedServiceData} />
                 </div>
                 <div className="bg-white rounded-lg shadow-xl p-6">
-                  <S2 />
+                  <S2 testimonials={transformedServiceData.testimonials} />
                 </div>
                 {/* <div className="bg-white rounded-lg shadow-xl p-6">
                   <S4 />

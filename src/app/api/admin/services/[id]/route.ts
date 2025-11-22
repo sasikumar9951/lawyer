@@ -51,6 +51,17 @@ export async function GET(
             description: true,
           },
         },
+        subCategoryId: true,
+        subCategory: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            categoryId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
         faqs: {
           select: {
             id: true,
@@ -121,6 +132,17 @@ export async function GET(
           createdAt: service.category.createdAt.toISOString(),
           updatedAt: service.category.updatedAt.toISOString(),
         },
+        subCategoryId: service.subCategoryId || null,
+        subCategory: service.subCategory
+          ? {
+              id: service.subCategory.id,
+              name: service.subCategory.name,
+              slug: service.subCategory.slug,
+              categoryId: service.subCategory.categoryId,
+              createdAt: service.subCategory.createdAt.toISOString(),
+              updatedAt: service.subCategory.updatedAt.toISOString(),
+            }
+          : null,
         form: service.form,
         faqs: service.faqs.map((faq) => ({
           id: faq.id,

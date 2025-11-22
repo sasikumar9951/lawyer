@@ -204,21 +204,47 @@ const Navbar = () => {
                         )}
                       </button>
 
-                      {/* Dropdown */}
-                      {hoveredCategory === category.name &&
-                        categoryServices.length > 0 && (
-                          <div className="absolute top-full left-0 bg-white border border-cyan-500 rounded-lg shadow-lg w-56 py-2 z-50">
-                            {categoryServices.map((service) => (
-                              <Link
-                                key={service.id}
-                                href={`/services/${service.categorySlug}/${service.slug}`}
-                                className="block px-4 py-2 text-gray-800 hover:text-cyan-500 font-['Lora']"
-                              >
-                                {service.name}
-                              </Link>
-                            ))}
+                      {/* Dropdown - if category has subCategories render grouped menu */}
+                      {hoveredCategory === category.name && categoryServices.length > 0 && (
+                        <div className="absolute top-full left-0 bg-white border border-cyan-500 rounded-lg shadow-lg w-[520px] py-4 z-50 submenu-animate">
+                          <div className="max-h-72 overflow-auto px-4">
+                            {category.subCategories && category.subCategories.length > 0 ? (
+                              <div className="grid grid-cols-2 gap-4">
+                                {category.subCategories.map((sub: any) => (
+                                  <div key={sub.id} className="min-w-0">
+                                    <div className="text-sm font-semibold text-cyan-700 mb-2">{sub.name}</div>
+                                    <div className="space-y-1">
+                                      {categoryServices
+                                        .filter((s) => s.subCategoryId === sub.id)
+                                        .map((service) => (
+                                          <Link
+                                            key={service.id}
+                                            href={`/services/${service.categorySlug}/${service.slug}`}
+                                            className="block px-2 py-1 text-gray-800 hover:text-cyan-500"
+                                          >
+                                            {service.name}
+                                          </Link>
+                                        ))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="space-y-1">
+                                {categoryServices.map((service) => (
+                                  <Link
+                                    key={service.id}
+                                    href={`/services/${service.categorySlug}/${service.slug}`}
+                                    className="block px-4 py-2 text-gray-800 hover:text-cyan-500 font-['Lora']"
+                                  >
+                                    {service.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                        )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}

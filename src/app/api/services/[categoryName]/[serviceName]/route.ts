@@ -160,8 +160,92 @@ export async function GET(
           createdAt: rating.createdAt.toISOString(),
           updatedAt: rating.updatedAt.toISOString(),
         })),
+        testimonials: [],
       },
     });
+
+    // Fetch testimonials separately (prisma client may need to be regenerated locally)
+    try {
+      if (service) {
+        const tItems = await (prisma as any).serviceTestimonial.findMany({ where: { serviceId: service.id }, orderBy: { order: 'asc' } });
+        (response => {
+          /* noop to keep types stable */
+        });
+        // attach testimonials
+        // convert to plain objects
+        const tMapped = tItems.map((t: any) => ({
+          id: t.id,
+          serviceId: t.serviceId,
+          author: t.author || null,
+          role: t.role || null,
+          text: t.text,
+          rating: t.rating || null,
+          isFeatured: t.isFeatured,
+          order: t.order || null,
+          createdAt: t.createdAt.toISOString(),
+          updatedAt: t.updatedAt.toISOString(),
+        }));
+
+        // replace the empty testimonials array in the response by reconstructing the response
+        return NextResponse.json({
+          success: true,
+          data: {
+            id: service.id,
+            name: service.name,
+            slug: service.slug,
+            description: service.description,
+            isActive: service.isActive,
+            contentJson: service.contentJson as ServiceContent | null,
+            categoryName: service.categoryName,
+            formId: service.formId,
+            createdAt: service.createdAt.toISOString(),
+            updatedAt: service.updatedAt.toISOString(),
+            category: {
+              id: service.category.id,
+              name: service.category.name,
+              slug: service.category.slug,
+              subCategories: [],
+              createdAt: service.category.createdAt.toISOString(),
+              updatedAt: service.category.updatedAt.toISOString(),
+            },
+            form: {
+              id: service.form.id,
+              name: service.form.name,
+              description: service.form.description,
+              schemaJson: service.form.schemaJson,
+            },
+            faqs: service.faqs.map((faq) => ({
+              id: faq.id,
+              serviceId: faq.serviceId,
+              question: faq.question,
+              answer: faq.answer,
+              createdAt: faq.createdAt.toISOString(),
+              updatedAt: faq.updatedAt.toISOString(),
+            })),
+            price: service.price.map((price) => ({
+              id: price.id,
+              serviceId: price.serviceId,
+              name: price.name,
+              price: price.price,
+              discountAmount: price.discountAmount,
+              isCompulsory: price.isCompulsory,
+              createdAt: price.createdAt.toISOString(),
+              updatedAt: price.updatedAt.toISOString(),
+            })),
+            rating: service.rating.map((rating) => ({
+              id: rating.id,
+              serviceId: rating.serviceId,
+              rating: rating.rating,
+              createdAt: rating.createdAt.toISOString(),
+              updatedAt: rating.updatedAt.toISOString(),
+            })),
+            testimonials: tMapped,
+          },
+        });
+      }
+    } catch (err) {
+      console.error('Failed to load testimonials', err);
+    }
   } catch (error) {
     console.error("Error fetching service:", error);
     return NextResponse.json(

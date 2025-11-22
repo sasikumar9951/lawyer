@@ -52,6 +52,58 @@ export async function GET(): Promise<NextResponse<ServiceCategoriesResponse>> {
 }
 
 // ============================================================================
+// DELETE: Delete a Main Category or Sub-Category
+// ============================================================================
+export async function DELETE(
+  request: NextRequest
+): Promise<NextResponse<{ success: boolean; message?: string }>> {
+  try {
+    const body = await request.json();
+    const { id, type } = body as { id?: string; type?: "CATEGORY" | "SUB_CATEGORY" };
+
+    if (!id || !type) {
+      return NextResponse.json(
+        { success: false, message: "id and type are required" },
+        { status: 400 }
+      );
+    }
+
+    if (type === "CATEGORY") {
+      const existing = await prisma.serviceCategory.findUnique({ where: { id } });
+      if (!existing) {
+        return NextResponse.json(
+          { success: false, message: "Category not found" },
+          { status: 404 }
+        );
+      }
+
+      // Deleting the category will cascade to sub-categories/services as per schema
+      await prisma.serviceCategory.delete({ where: { id } });
+
+      return NextResponse.json({ success: true, message: "Category deleted" });
+    }
+
+    // SUB_CATEGORY
+    const existingSub = await prisma.serviceSubCategory.findUnique({ where: { id } });
+    if (!existingSub) {
+      return NextResponse.json(
+        { success: false, message: "Sub-category not found" },
+        { status: 404 }
+      );
+    }
+
+    await prisma.serviceSubCategory.delete({ where: { id } });
+    return NextResponse.json({ success: true, message: "Sub-category deleted" });
+  } catch (error) {
+    console.error("Error deleting category/sub-category:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to delete" },
+      { status: 500 }
+    );
+  }
+}
+
+// ============================================================================
 // POST: Create a Main Category OR Sub-Category
 // ============================================================================
 export async function POST(

@@ -21,13 +21,13 @@ datasource db {
 // ================================
 
 model Form {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
   name        String
   description String?
   schemaJson  Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  type        FormType @default(SERVICE_FORM)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  type        FormType       @default(SERVICE_FORM)
   responses   FormResponse[]
   services    Service[]
 }
@@ -39,115 +39,128 @@ enum FormType {
 }
 
 model FormResponse {
-  id         String   @id @default(cuid())
-  formId     String
-  form       Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  rawJson    Json?
+  id        String   @id @default(cuid())
+  formId    String
+  form      Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  rawJson   Json?
 
-  cases       Case[]
+  cases Case[]
 }
-
 
 // ================================
 // Services
 // ================================
 
 model ServiceCategory {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  slug        String   @unique
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
 
   services      Service[]
-  subCategories ServiceSubCategory[]   // ⭐ ADD THIS LINE
+  subCategories ServiceSubCategory[] // ⭐ ADD THIS LINE
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ServiceSubCategory {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
 
-  categoryId  String
-  category    ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
-  services    Service[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  services  Service[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@unique([name, categoryId])
 }
 
 model Service {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   slug        String
   description String?
-  isActive    Boolean  @default(true)
+  isActive    Boolean @default(true)
   contentJson Json?
 
-  faqs        ServiceFAQ[]
-  rating      ServiceRating[]
-  price       ServicePrice[]
-  cases       Case[]
+  faqs         ServiceFAQ[]
+  rating       ServiceRating[]
+  testimonials ServiceTestimonial[]
+  price        ServicePrice[]
+  cases        Case[]
 
-  heroTitle     String?   @db.Text
-  heroSubtitle  String?   @db.Text
-  heroImage     String?   @db.Text
-  contentImage  String?
+  heroTitle    String? @db.Text
+  heroSubtitle String? @db.Text
+  heroImage    String? @db.Text
+  contentImage String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  categoryName  String
-  category      ServiceCategory @relation(fields: [categoryName], references: [name], onDelete: Cascade)
+  categoryName String
+  category     ServiceCategory @relation(fields: [categoryName], references: [name], onDelete: Cascade)
 
   subCategoryId String?
   subCategory   ServiceSubCategory? @relation(fields: [subCategoryId], references: [id], onDelete: SetNull)
 
-  formId        String
-  form          Form @relation(fields: [formId], references: [id], onDelete: Cascade)
+  formId String
+  form   Form   @relation(fields: [formId], references: [id], onDelete: Cascade)
 
   @@unique([name, categoryName])
   @@unique([slug, categoryName])
 }
 
-
 model ServicePrice {
-  id          String   @id @default(cuid())
-  serviceId   String
-  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  name        String
-  price       Int
-  discountAmount    Int?
-  isCompulsory    Boolean @default(false)
-  
+  id             String  @id @default(cuid())
+  serviceId      String
+  service        Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  name           String
+  price          Int
+  discountAmount Int?
+  isCompulsory   Boolean @default(false)
+
   // Payment relations
   paymentOrderItems PaymentOrderItem[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ServiceRating {
-  id          String   @id @default(cuid())
-  serviceId   String
-  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  rating      Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  rating    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model ServiceFAQ  {
-  id          String   @id @default(cuid())
-  serviceId   String
-  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  question    String
-  answer      String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model ServiceTestimonial {
+  id         String   @id @default(cuid())
+  serviceId  String
+  service    Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  author     String?
+  role       String? // e.g., "B. Sivakumar, Bangalore"
+  text       String
+  rating     Int?
+  isFeatured Boolean  @default(false)
+  order      Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model ServiceFAQ {
+  id        String   @id @default(cuid())
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  question  String
+  answer    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ================================
@@ -155,62 +168,62 @@ model ServiceFAQ  {
 // ================================
 
 model Lawyer {
-  id          String   @id @default(cuid())
-  name        String
-  email       String   @unique
-  phone       String?
+  id    String  @id @default(cuid())
+  name  String
+  email String  @unique
+  phone String?
 
   specialization String[]
-  experience   Int?
-  languages    String[]
-  isActive     Boolean  @default(true)
+  experience     Int?
+  languages      String[]
+  isActive       Boolean  @default(true)
 
-  remarks      String[]
+  remarks String[]
 
-  cases       Case[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  cases     Case[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model Case { 
-  id          String   @id @default(cuid())
+model Case {
+  id String @id @default(cuid())
 
-  status      CaseStatus @default(PENDING)
-  isActive    Boolean  @default(true)
+  status   CaseStatus @default(PENDING)
+  isActive Boolean    @default(true)
 
-  customerName      String
-  customerEmail     String
-  customerPhone     String
+  customerName  String
+  customerEmail String
+  customerPhone String
 
-  files       CaseFiles[]
-  meetings    CaseMeeting[]
+  files                 CaseFiles[]
+  meetings              CaseMeeting[]
   whatsappNotifications WhatsAppNotification[]
-  paymentOrders PaymentOrder[]
+  paymentOrders         PaymentOrder[]
 
   isAutoNotificationOn Boolean @default(true)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  lawyerId    String?
-  lawyer      Lawyer?   @relation(fields: [lawyerId], references: [id], onDelete: Cascade)
+  lawyerId String?
+  lawyer   Lawyer? @relation(fields: [lawyerId], references: [id], onDelete: Cascade)
 
-  serviceId   String
-  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
   formResponseId String?
-  formResponse  FormResponse? @relation(fields: [formResponseId], references: [id], onDelete: Cascade)
+  formResponse   FormResponse? @relation(fields: [formResponseId], references: [id], onDelete: Cascade)
 }
 
-model CaseFiles { 
-  id          String   @id @default(cuid())
-  caseId      String
-  case        Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  name        String
-  fileUrl     String?
-  s3Path      String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model CaseFiles {
+  id        String   @id @default(cuid())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  name      String
+  fileUrl   String?
+  s3Path    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum CaseStatus {
@@ -221,20 +234,20 @@ enum CaseStatus {
 }
 
 model CaseMeeting {
-  id          String   @id @default(cuid())
+  id           String    @id @default(cuid())
   linkOrNumber String?
-  startTime   DateTime?
-  endTime     DateTime?
-  duration    Int?
+  startTime    DateTime?
+  endTime      DateTime?
+  duration     Int?
   meetingNotes String?
-  meetingName String? 
+  meetingName  String?
 
   // meetingLinks MeetingLink[]
-  
-  caseId      String
-  case        Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // model MeetingLink {
@@ -255,29 +268,29 @@ model CaseMeeting {
 // ================================
 
 model WhatsAppNotification {
-  id          String   @id @default(cuid())
-  
-  recipientPhone    String
-  recipientType     RecipientType
+  id String @id @default(cuid())
 
-  messageType       MessageType
-  templateName      String?
-  messageContent    String
-  
-  status            NotificationStatus @default(PENDING)
-  twilioMessageSid  String?
-  deliveredAt       DateTime?
-  failedAt          DateTime?
-  errorMessage      String?
-  
-  templateId        String?
-  template          WhatsAppTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
-  
-  caseId            String?
-  case              Case? @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  recipientPhone String
+  recipientType  RecipientType
+
+  messageType    MessageType
+  templateName   String?
+  messageContent String
+
+  status           NotificationStatus @default(PENDING)
+  twilioMessageSid String?
+  deliveredAt      DateTime?
+  failedAt         DateTime?
+  errorMessage     String?
+
+  templateId String?
+  template   WhatsAppTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  caseId String?
+  case   Case?   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum RecipientType {
@@ -317,8 +330,8 @@ model WhatsAppTemplate {
   status       WhatsAppTemplateStatus @default(PENDING)
   isActive     Boolean                @default(false)
 
-  createdAt    DateTime               @default(now())
-  updatedAt    DateTime               @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   notifications WhatsAppNotification[]
 }
@@ -334,71 +347,71 @@ enum WhatsAppTemplateStatus {
 // ================================
 
 model PaymentOrder {
-  id                    String                @id @default(cuid())
-  merchantOrderId       String                @unique
-  phonepeOrderId        String?               @unique
-  amount                Int                   // Amount in paisa
-  currency              String                @default("INR")
-  
+  id              String  @id @default(cuid())
+  merchantOrderId String  @unique
+  phonepeOrderId  String? @unique
+  amount          Int // Amount in paisa
+  currency        String  @default("INR")
+
   // Payment Details
-  status                PaymentStatus         @default(PENDING)
-  paymentMethod         PaymentMethod?
-  phonepeTransactionId  String?
-  
+  status               PaymentStatus  @default(PENDING)
+  paymentMethod        PaymentMethod?
+  phonepeTransactionId String?
+
   // PhonePe Response Data
-  phonepeResponse       Json?
-  redirectUrl           String?
-  checkoutUrl           String?
-  expireAt              DateTime?
-  
+  phonepeResponse Json?
+  redirectUrl     String?
+  checkoutUrl     String?
+  expireAt        DateTime?
+
   // Customer Information
-  customerName          String
-  customerEmail         String
-  customerPhone         String
-  
+  customerName  String
+  customerEmail String
+  customerPhone String
+
   // Selected Services & Pricing
-  selectedPrices        PaymentOrderItem[]
-  
+  selectedPrices PaymentOrderItem[]
+
   // Relations
-  caseId                String?
-  case                  Case?                 @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  
+  caseId String?
+  case   Case?   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
   // Payment Audit Trail
-  paymentLogs           PaymentAuditLog[]
-  
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
+  paymentLogs PaymentAuditLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model PaymentOrderItem {
-  id                    String                @id @default(cuid())
-  orderId               String
-  order                 PaymentOrder          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
+  id      String       @id @default(cuid())
+  orderId String
+  order   PaymentOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
   // Direct relation to ServicePrice
-  servicePriceId        String
-  servicePrice          ServicePrice          @relation(fields: [servicePriceId], references: [id], onDelete: Cascade)
-  
+  servicePriceId String
+  servicePrice   ServicePrice @relation(fields: [servicePriceId], references: [id], onDelete: Cascade)
+
   // Snapshot of pricing at time of order (for audit purposes)
-  priceAtOrderTime      Int                   // Price in paisa at the time of order
-  discountAtOrderTime   Int?                  // Discount amount in paisa at the time of order
-  finalPrice            Int                   // Final calculated price in paisa
-  
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
+  priceAtOrderTime    Int // Price in paisa at the time of order
+  discountAtOrderTime Int? // Discount amount in paisa at the time of order
+  finalPrice          Int // Final calculated price in paisa
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model PaymentAuditLog {
-  id                    String                @id @default(cuid())
-  orderId               String
-  order                 PaymentOrder          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  event                 PaymentEvent
-  status                PaymentStatus?
-  description           String
-  metadata              Json?                 // Store additional data like PhonePe responses, errors, etc.
-  
-  createdAt             DateTime              @default(now())
+  id      String       @id @default(cuid())
+  orderId String
+  order   PaymentOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  event       PaymentEvent
+  status      PaymentStatus?
+  description String
+  metadata    Json? // Store additional data like PhonePe responses, errors, etc.
+
+  createdAt DateTime @default(now())
 }
 
 enum PaymentStatus {

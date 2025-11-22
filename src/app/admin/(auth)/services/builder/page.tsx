@@ -23,6 +23,7 @@ import {
   BuilderCategoryOption,
   BuilderFormOption,
   ApiService,
+  ApiServiceTestimonial,
   ContentBlock,
   ServiceContent,
   DeliverablesContentBlock,
@@ -85,6 +86,12 @@ const ServicesBuilderContent = () => {
     description: "",
     items: [""],
   });
+  // Testimonials
+  const [testimonials, setTestimonials] = useState<ApiServiceTestimonial[]>([]);
+  const [isLoadingTestimonials, setIsLoadingTestimonials] = useState(false);
+  const [isTestimonialDialogOpen, setIsTestimonialDialogOpen] = useState(false);
+  const [editingTestimonial, setEditingTestimonial] = useState<ApiServiceTestimonial | null>(null);
+  const [testimonialForm, setTestimonialForm] = useState({ author: "", role: "", text: "", rating: 0, isFeatured: false });
 
   const filteredSubCategories = useMemo(() => {
     return subCategories.filter(
@@ -128,11 +135,11 @@ const uploadToS3 = async (file: File): Promise<string | null> => {
     // ============================================================
     // FIX: Constructing the Full URL manually
     // ============================================================
-    // உங்க .env ஃபைல்படி சரியான பக்கெட் பெயர் மற்றும் ரீஜியன்
+    // Use the correct bucket name and region (from your .env configuration)
     const bucketName = "lawyer-development";
     const region = "ap-south-1";
 
-    // இதுதான் முக்கியம்! https:// சேர்த்து முழு லிங்க் உருவாக்குறோம்
+    // Construct the full S3 URL
     const fullUrl = `https://${bucketName}.s3.${region}.amazonaws.com/${s3Path}`;
 
     return fullUrl;
@@ -181,9 +188,21 @@ const uploadToS3 = async (file: File): Promise<string | null> => {
       const data = await response.json();
 
       if (data.success) {
-setCategories(data.data.categories);
-setSubCategories(data.data.subCategories || []); 
-setForms(data.data.forms);
+        const apiCategories = data.data.categories || [];
+        setCategories(apiCategories);
+
+        // Build a flattened subCategories array with `categoryName` so
+        // the UI can filter subcategories by the selected category name.
+        const flattenedSubCategories = apiCategories.flatMap((cat: any) =>
+          (cat.subCategories || []).map((sub: any) => ({
+            id: sub.id,
+            name: sub.name,
+            categoryName: cat.name,
+          }))
+        );
+
+        setSubCategories(flattenedSubCategories);
+        setForms(data.data.forms);
 
       }
     } catch (error) {
@@ -206,6 +225,7 @@ setForms(data.data.forms);
         setIsActive(service.isActive);
         setSelectedCategoryName(service.categoryName);
         setSelectedFormId(service.formId);
+        setSelectedSubCategoryId(service.subCategoryId || "");
         setHeroTitle(service.heroTitle || "");
         setHeroSubtitle(service.heroSubtitle || "");
         setHeroImage(service.heroImage || "");
@@ -887,6 +907,97 @@ setForms(data.data.forms);
           </Button>
         </CardContent>
       </Card>
+
+      {/* Testimonials (only while editing a service) */}
+      {isEditMode && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Testimonials</CardTitle>
+            <CardDescription>
+              Add or edit testimonials shown on the public service page
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {testimonials.length === 0 ? (
+              <div className="text-sm text-gray-500">No testimonials yet.</div>
+            ) : (
+              testimonials.map((t) => (
+                <div key={t.id} className="border rounded-lg p-3 flex justify-between items-start">
+                  <div>
+                    <div className="font-medium">{t.author || "Anonymous"} {t.role ? <span className="text-sm text-gray-500">— {t.role}</span> : null}</div>
+                    <div className="text-sm text-gray-700 mt-2">{t.text}</div>
+                    {t.rating ? <div className="text-xs text-gray-500 mt-2">Rating: {t.rating}</div> : null}
+                  </div>
+                  <div className="flex flex-col gap-2 ml-4">
+                    <Button variant="outline" size="sm" onClick={() => { setEditingTestimonial(t); setTestimonialForm({ author: t.author || "", role: t.role || "", text: t.text, rating: t.rating || 0, isFeatured: t.isFeatured }); setIsTestimonialDialogOpen(true); }}>
+                      Edit
+                    </Button>
+                    <Button variant="destructive" size="sm" onClick={async () => { if (!confirm('Delete testimonial?')) return; try { const res = await fetch(`/api/admin/services/testimonials/${t.id}`, { method: 'DELETE' }); const d = await res.json(); if (d.success) setTestimonials(testimonials.filter(x=>x.id!==t.id)); else alert('Delete failed'); } catch(e){console.error(e); alert('Delete failed')} }}>
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+
+            <div>
+              <Button variant="outline" onClick={() => { setEditingTestimonial(null); setTestimonialForm({ author: "", role: "", text: "", rating: 0, isFeatured: false }); setIsTestimonialDialogOpen(true); }}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Testimonial
+              </Button>
+            </div>
+
+            {/* Simple dialog inline */}
+            {isTestimonialDialogOpen && (
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Author</Label>
+                    <Input value={testimonialForm.author} onChange={(e) => setTestimonialForm({...testimonialForm, author: e.target.value})} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label>Role / Location</Label>
+                    <Input value={testimonialForm.role} onChange={(e) => setTestimonialForm({...testimonialForm, role: e.target.value})} className="mt-1" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <Label>Text</Label>
+                  <Textarea value={testimonialForm.text} onChange={(e) => setTestimonialForm({...testimonialForm, text: e.target.value})} className="mt-1" />
+                </div>
+                <div className="flex justify-end gap-2 mt-3">
+                  <Button variant="outline" onClick={() => setIsTestimonialDialogOpen(false)}>Cancel</Button>
+                  <Button onClick={async () => {
+                    if (!testimonialForm.text.trim()) { alert('Text is required'); return; }
+                    try {
+                      if (editingTestimonial) {
+                        const res = await fetch(`/api/admin/services/testimonials/${editingTestimonial.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...testimonialForm }) });
+                        const d = await res.json();
+                        if (d.success) {
+                          setTestimonials(testimonials.map(t => t.id === d.data.id ? d.data : t));
+                          setIsTestimonialDialogOpen(false);
+                        } else {
+                          alert(d.message || 'Update failed');
+                        }
+                      } else {
+                        const res = await fetch('/api/admin/services/testimonials', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ serviceId: editServiceId, ...testimonialForm }) });
+                        const d = await res.json();
+                        if (d.success) {
+                          setTestimonials([d.data, ...testimonials]);
+                          setIsTestimonialDialogOpen(false);
+                        } else {
+                          alert(d.message || 'Create failed');
+                        }
+                      }
+                    } catch (e) { console.error(e); alert('Operation failed') }
+                  }}>
+                    {editingTestimonial ? 'Update' : 'Create'}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Deliverables Section */}
       <Card className="relative">

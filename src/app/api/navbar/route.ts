@@ -32,6 +32,14 @@ export async function GET(): Promise<NextResponse<NavbarDataResponse>> {
           id: true,
           name: true,
           slug: true,
+          subCategories: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+            orderBy: { name: "asc" },
+          },
         },
         orderBy: { createdAt: "desc" },
       }),
@@ -42,6 +50,13 @@ export async function GET(): Promise<NextResponse<NavbarDataResponse>> {
           slug: true,
           category: {
             select: {
+              name: true,
+              slug: true,
+            },
+          },
+          subCategory: {
+            select: {
+              id: true,
               name: true,
               slug: true,
             },
@@ -61,6 +76,11 @@ export async function GET(): Promise<NextResponse<NavbarDataResponse>> {
           id: category.id,
           name: category.name,
           slug: category.slug,
+          subCategories: (category.subCategories || []).map((sub) => ({
+            id: sub.id,
+            name: sub.name,
+            slug: sub.slug,
+          })),
         })),
         services: services.map((service) => ({
           id: service.id,
@@ -68,6 +88,9 @@ export async function GET(): Promise<NextResponse<NavbarDataResponse>> {
           slug: service.slug,
           categoryName: service.category.name,
           categorySlug: service.category.slug,
+          subCategoryId: service.subCategory ? service.subCategory.id : null,
+          subCategoryName: service.subCategory ? service.subCategory.name : null,
+          subCategorySlug: service.subCategory ? service.subCategory.slug : null,
         })),
       },
     });
