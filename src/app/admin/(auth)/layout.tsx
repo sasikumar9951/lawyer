@@ -11,6 +11,7 @@ import {
   PlusCircle,
   UserPlus,
   Users,
+  Layers,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
@@ -108,6 +109,11 @@ const AdminShell = ({ children }: { children: React.ReactNode }) => {
       label: "Services",
       items: [
         { title: "All Services", href: "/admin/services", icon: Package },
+        {
+          title: "Categories",
+          href: "/admin/services/categories",
+          icon: Layers,
+        },
       ],
     },
     {

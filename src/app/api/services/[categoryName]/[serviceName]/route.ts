@@ -125,6 +125,7 @@ export async function GET(
           id: service.category.id,
           name: service.category.name,
           slug: service.category.slug,
+          subCategories: [],
           createdAt: service.category.createdAt.toISOString(),
           updatedAt: service.category.updatedAt.toISOString(),
         },

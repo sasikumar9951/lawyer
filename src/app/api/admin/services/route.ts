@@ -2,74 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import {
   CreateServiceRequest,
-  UpdateServiceRequest,
   ServicesResponse,
   ServiceResponse,
   ServiceContent,
 } from "@/types/api/services";
 import { generateSlug } from "@/lib/utils";
 
+// ============================================================================
+// GET: Fetch All Services
+// ============================================================================
 export async function GET(): Promise<NextResponse<ServicesResponse>> {
   try {
     const services = await prisma.service.findMany({
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        description: true,
-        isActive: true,
-        contentJson: true,
-        categoryName: true,
-        formId: true,
-        createdAt: true,
-        updatedAt: true,
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-        form: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-          },
-        },
-        faqs: {
-          select: {
-            id: true,
-            serviceId: true,
-            question: true,
-            answer: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-        price: {
-          select: {
-            id: true,
-            serviceId: true,
-            name: true,
-            price: true,
-            discountAmount: true,
-            isCompulsory: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-        rating: {
-          select: {
-            id: true,
-            serviceId: true,
-            rating: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
+      include: {
+        subCategory: true,
+        category: true,
+        form: true,
+        faqs: true,
+        price: true,
+        rating: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -84,13 +35,35 @@ export async function GET(): Promise<NextResponse<ServicesResponse>> {
         isActive: service.isActive,
         contentJson: service.contentJson as ServiceContent | null,
         categoryName: service.categoryName,
+
+        // ⭐ Map Sub-Category
+        subCategoryId: service.subCategoryId,
+        subCategory: service.subCategory
+          ? {
+              id: service.subCategory.id,
+              name: service.subCategory.name,
+              slug: service.subCategory.slug,
+              categoryId: service.subCategory.categoryId,
+              createdAt: service.subCategory.createdAt.toISOString(),
+              updatedAt: service.subCategory.updatedAt.toISOString(),
+            }
+          : null,
+
         formId: service.formId,
+
+        // ⭐ Map Hero Fields
+        heroTitle: service.heroTitle,
+        heroSubtitle: service.heroSubtitle,
+        heroImage: service.heroImage,
+        contentImage: service.contentImage,
+
         createdAt: service.createdAt.toISOString(),
         updatedAt: service.updatedAt.toISOString(),
         category: {
           id: service.category.id,
           name: service.category.name,
           slug: service.category.slug,
+          subCategories: [], // Return empty array for list view to satisfy type
           createdAt: service.category.createdAt.toISOString(),
           updatedAt: service.category.updatedAt.toISOString(),
         },
@@ -135,12 +108,16 @@ export async function GET(): Promise<NextResponse<ServicesResponse>> {
   }
 }
 
+// ============================================================================
+// POST: Create Service
+// ============================================================================
 export async function POST(
   request: NextRequest
 ): Promise<NextResponse<ServiceResponse>> {
   try {
     const body: CreateServiceRequest = await request.json();
 
+    // 1. Basic Validation
     if (!body.name || body.name.trim() === "") {
       return NextResponse.json(
         {
@@ -163,43 +140,35 @@ export async function POST(
       );
     }
 
-    // Check if category exists
+    // 2. Check if Category exists
     const category = await prisma.serviceCategory.findUnique({
       where: { name: body.categoryName },
     });
 
     if (!category) {
       return NextResponse.json(
-        {
-          success: false,
-          data: {} as any,
-          message: "Category not found",
-        },
+        { success: false, data: {} as any, message: "Category not found" },
         { status: 404 }
       );
     }
 
-    // Check if form exists
+    // 3. Check if Form exists
     const form = await prisma.form.findUnique({
       where: { id: body.formId },
     });
 
     if (!form) {
       return NextResponse.json(
-        {
-          success: false,
-          data: {} as any,
-          message: "Form not found",
-        },
+        { success: false, data: {} as any, message: "Form not found" },
         { status: 404 }
       );
     }
 
-    // Check if service name already exists in the same category
+    // 4. Check if Service Name already exists in Category
     const existingService = await prisma.service.findFirst({
       where: {
         name: body.name.trim(),
-        categoryName: body.categoryName,
+        category: { name: body.categoryName },
       },
     });
 
@@ -215,17 +184,34 @@ export async function POST(
       );
     }
 
+    // 5. Create Service
     const service = await prisma.service.create({
       data: {
         name: body.name.trim(),
         slug: body.slug || generateSlug(body.name.trim()),
         description: body.description?.trim() || null,
         isActive: body.isActive ?? true,
-        categoryName: body.categoryName,
-        formId: body.formId,
+        category: { connect: { name: body.categoryName } },
+        form: { connect: { id: body.formId } },
+
+        // ⭐ Connect Sub-Category (if provided)
+        ...(body.subCategoryId
+          ? {
+              subCategory: { connect: { id: body.subCategoryId } },
+            }
+          : {}),
+
+        // ⭐ Add Hero & Content Fields
+        heroTitle: body.heroTitle,
+        heroSubtitle: body.heroSubtitle,
+        heroImage: body.heroImage,
+        contentImage: body.contentImage,
+
         contentJson: body.content
           ? JSON.parse(JSON.stringify(body.content))
           : null,
+
+        // Create Related Data (FAQs, Price)
         faqs: body.faqs
           ? {
               create: body.faqs.map((faq) => ({
@@ -256,6 +242,24 @@ export async function POST(
         formId: true,
         createdAt: true,
         updatedAt: true,
+
+        // ⭐ Select Sub-Category & Hero Fields in Response
+        subCategoryId: true,
+        subCategory: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            categoryId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+        heroTitle: true,
+        heroSubtitle: true,
+        heroImage: true,
+        contentImage: true,
+
         category: true,
         form: {
           select: {
@@ -280,13 +284,35 @@ export async function POST(
         isActive: service.isActive,
         contentJson: service.contentJson as ServiceContent | null,
         categoryName: service.categoryName,
+
+        // ⭐ Map Sub-Category
+        subCategoryId: service.subCategoryId,
+        subCategory: service.subCategory
+          ? {
+              id: service.subCategory.id,
+              name: service.subCategory.name,
+              slug: service.subCategory.slug,
+              categoryId: service.subCategory.categoryId,
+              createdAt: service.subCategory.createdAt.toISOString(),
+              updatedAt: service.subCategory.updatedAt.toISOString(),
+            }
+          : null,
+
         formId: service.formId,
+
+        // ⭐ Map Hero Fields
+        heroTitle: service.heroTitle,
+        heroSubtitle: service.heroSubtitle,
+        heroImage: service.heroImage,
+        contentImage: service.contentImage,
+
         createdAt: service.createdAt.toISOString(),
         updatedAt: service.updatedAt.toISOString(),
         category: {
           id: service.category.id,
           name: service.category.name,
           slug: service.category.slug,
+          subCategories: [],
           createdAt: service.category.createdAt.toISOString(),
           updatedAt: service.category.updatedAt.toISOString(),
         },

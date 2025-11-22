@@ -1,10 +1,28 @@
-export type ApiServiceCategory = {
+// ==========================================
+// Categories & Sub-Categories
+// ==========================================
+
+export interface ApiServiceSubCategory {
   id: string;
   name: string;
   slug: string;
+  categoryId: string;
   createdAt: string;
   updatedAt: string;
-};
+}
+
+export interface ApiServiceCategory {
+  id: string;
+  name: string;
+  slug: string;
+  subCategories: ApiServiceSubCategory[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ==========================================
+// Components (Price, FAQ, Rating)
+// ==========================================
 
 export type ApiServicePrice = {
   id: string;
@@ -34,6 +52,10 @@ export type ApiServiceRating = {
   updatedAt: string;
 };
 
+// ==========================================
+// Main Service Type (Updated)
+// ==========================================
+
 export type ApiService = {
   id: string;
   name: string;
@@ -41,25 +63,45 @@ export type ApiService = {
   description?: string | null;
   isActive: boolean;
   contentJson?: ServiceContent | null;
+
+  // Category Relations
   categoryName: string;
-  formId: string;
-  createdAt: string;
-  updatedAt: string;
   category?: ApiServiceCategory;
+
+  // ⭐ NEW: Sub-Category Relation
+  subCategoryId?: string | null;
+  subCategory?: ApiServiceSubCategory | null;
+
+  formId: string;
   form?: {
     id: string;
     name: string;
     description?: string | null;
     schemaJson?: any;
   };
+
+  // ⭐ NEW: Hero & Content Images
+  heroTitle?: string | null;
+  heroSubtitle?: string | null;
+  heroImage?: string | null;
+  contentImage?: string | null;
+
   faqs?: ApiServiceFAQ[];
   price?: ApiServicePrice[];
   rating?: ApiServiceRating[];
+
+  createdAt: string;
+  updatedAt: string;
 };
 
-// Request types
+// ==========================================
+// Request Types
+// ==========================================
+
 export type CreateServiceCategoryRequest = {
   name: string;
+  parentId?: string;
+  type: "CATEGORY" | "SUB_CATEGORY";
 };
 
 export type UpdateServiceCategoryRequest = {
@@ -78,35 +120,55 @@ export type CreateServiceFAQRequest = {
   answer: string;
 };
 
+// ⭐ Updated: Added new fields here
 export type CreateServiceRequest = {
   name: string;
   slug: string;
   description?: string;
   isActive?: boolean;
+
   categoryName: string;
+  subCategoryId?: string; // New
+
   formId: string;
+
+  // Hero Section
+  heroTitle?: string;
+  heroSubtitle?: string;
+  heroImage?: string;
+  contentImage?: string;
+
   faqs?: CreateServiceFAQRequest[];
   prices?: CreateServicePriceRequest[];
   content?: ServiceContent;
 };
 
+// ⭐ Updated: Added new fields here
 export type UpdateServiceRequest = {
   name?: string;
   slug?: string;
   description?: string;
   isActive?: boolean;
+
   categoryName?: string;
+  subCategoryId?: string; // New
+
   formId?: string;
+
   heroTitle?: string;
   heroSubtitle?: string;
   heroImage?: string;
   contentImage?: string;
+
   faqs?: CreateServiceFAQRequest[];
   prices?: CreateServicePriceRequest[];
   content?: ServiceContent;
 };
 
-// Response types
+// ==========================================
+// Response Types
+// ==========================================
+
 export type ServiceCategoriesResponse = {
   success: boolean;
   data: ApiServiceCategory[];
@@ -115,7 +177,7 @@ export type ServiceCategoriesResponse = {
 
 export type ServiceCategoryResponse = {
   success: boolean;
-  data: ApiServiceCategory;
+  data: ApiServiceCategory | ApiServiceSubCategory;
   message?: string;
 };
 
@@ -129,21 +191,27 @@ export type ServiceResponse = {
   success: boolean;
   data: ApiService;
   message?: string;
-  heroTitle?: string | null;
-  heroSubtitle?: string | null;
-  heroImage?: string | null;
-  contentImage?: string | null;
 };
 
-// Builder-specific types for minimal data
+// ==========================================
+// Builder Data Types
+// ==========================================
+
 export type BuilderFormOption = {
   id: string;
   name: string;
 };
 
+export type BuilderSubCategoryOption = {
+  id: string;
+  name: string;
+};
+
+// ⭐ Updated: Include subCategories for dropdown
 export type BuilderCategoryOption = {
   id: string;
   name: string;
+  subCategories: BuilderSubCategoryOption[];
 };
 
 export type ServiceBuilderDataResponse = {
@@ -155,7 +223,10 @@ export type ServiceBuilderDataResponse = {
   message?: string;
 };
 
-// Table-specific types for minimal data display
+// ==========================================
+// Table Data Types
+// ==========================================
+
 export type ServiceTableData = {
   id: string;
   name: string;
@@ -163,6 +234,7 @@ export type ServiceTableData = {
   isActive: boolean;
   categoryName: string;
   categorySlug: string;
+  subCategoryName?: string | null; // ⭐ New
   formName: string;
   createdAt: string;
 };
@@ -173,7 +245,10 @@ export type ServicesTableResponse = {
   message?: string;
 };
 
-// Content Block Types
+// ==========================================
+// Content Block Types (No Changes)
+// ==========================================
+
 export type ListContentBlock = {
   type: "list";
   title: string;

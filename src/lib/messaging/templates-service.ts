@@ -188,7 +188,7 @@ export const sendWithApprovedActiveTemplate = async (
       where: { id: createdNotification.id },
       data: {
         status: "FAILED",
-        errorMessage: result.error,
+        errorMessage: (result as any).error,
         failedAt: new Date(),
       },
     });

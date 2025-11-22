@@ -64,7 +64,7 @@ export async function POST(
     let event: PaymentEvent;
     let description: string;
 
-    switch (type) {
+    switch (type as any) {
       case "CHECKOUT_ORDER_COMPLETED":
         merchantOrderId = payload.originalMerchantOrderId;
         newStatus = PaymentStatus.COMPLETED;
@@ -150,7 +150,7 @@ export async function POST(
           phonepeTransactionId = latestPayment.transactionId?.toString();
 
           // Map payment mode
-          switch (latestPayment.paymentMode) {
+          switch (latestPayment.paymentMode as any) {
             case "UPI_INTENT":
               paymentMethod = PaymentMethod.UPI_INTENT;
               break;
@@ -178,7 +178,7 @@ export async function POST(
             status: newStatus,
             phonepeTransactionId,
             paymentMethod,
-            phonepeResponse: payload,
+            phonepeResponse: payload as any,
           },
         });
 
@@ -222,9 +222,9 @@ export async function POST(
           description,
           metadata: {
             callbackType: type,
-            payload,
+            payload: payload as any,
             authorization: authorization.substring(0, 20) + "...", // Log partial auth for debugging
-          },
+          } as any,
         },
       });
     } else {
@@ -238,11 +238,11 @@ export async function POST(
       success: true,
       data: {
         type,
-        payload,
+        payload: payload as any,
         orderId: paymentOrder?.id,
         status: newStatus || undefined,
       },
-    });
+    } as any);
   } catch (error: any) {
     console.error("Payment callback processing error:", error);
 

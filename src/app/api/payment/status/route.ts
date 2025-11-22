@@ -203,7 +203,7 @@ export async function POST(
         merchantOrderId: paymentOrder.merchantOrderId,
         status: updatedStatus as PaymentStatus,
         amount: paymentOrder.amount,
-        paymentMethod: paymentMethod || undefined,
+        paymentMethod: (paymentMethod as unknown as PaymentMethod) || undefined,
         phonepeTransactionId: phonepeTransactionId || undefined,
         customerInfo: {
           name: paymentOrder.customerName,
@@ -215,7 +215,7 @@ export async function POST(
         createdAt: paymentOrder.createdAt.toISOString(),
         updatedAt: paymentOrder.updatedAt.toISOString(),
       },
-    });
+    } as any);
   } catch (error: any) {
     console.error("Payment status check error:", error);
 

@@ -2,27 +2,22 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { ServiceBuilderDataResponse } from "@/types/api/services";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(): Promise<NextResponse<ServiceBuilderDataResponse>> {
   try {
-    // Fetch categories, subcategories and forms
-    const [categories, subCategories, forms] = await Promise.all([
+    // Fetch Categories with Nested SubCategories & Forms
+    const [categories, forms] = await Promise.all([
       prisma.serviceCategory.findMany({
         select: {
           id: true,
           name: true,
-        },
-        orderBy: { name: "asc" },
-      }),
-
-      prisma.serviceSubCategory.findMany({
-        select: {
-          id: true,
-          name: true,
-          categoryId: true,
-          category: {
+          subCategories: {
             select: {
+              id: true,
               name: true,
             },
+            orderBy: { name: "asc" },
           },
         },
         orderBy: { name: "asc" },
@@ -43,17 +38,14 @@ export async function GET(): Promise<NextResponse<ServiceBuilderDataResponse>> {
     return NextResponse.json({
       success: true,
       data: {
+        // Categories உள்ளேயே SubCategories இருக்கும்
         categories: categories.map((category) => ({
           id: category.id,
           name: category.name,
-        })),
-
-        // ⭐ Important: return subcategory with categoryName
-        subCategories: subCategories.map((sub) => ({
-          id: sub.id,
-          name: sub.name,
-          categoryId: sub.categoryId,
-          categoryName: sub.category.name, // needed for filtering
+          subCategories: category.subCategories.map((sub) => ({
+            id: sub.id,
+            name: sub.name,
+          })),
         })),
 
         forms: forms.map((form) => ({
@@ -69,7 +61,6 @@ export async function GET(): Promise<NextResponse<ServiceBuilderDataResponse>> {
         success: false,
         data: {
           categories: [],
-          subCategories: [],
           forms: [],
         },
         message: "Failed to fetch builder data",
