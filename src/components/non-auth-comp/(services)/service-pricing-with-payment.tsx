@@ -51,7 +51,7 @@ const ServicePricingWithPayment = ({
       currency: "INR",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(price / 100); // Convert paisa to rupees
+    }).format(price);
   };
 
   const calculateDiscountedPrice = (

@@ -192,9 +192,6 @@ export async function PUT(
     const { id } = await params;
     const body = await req.json();
 
-    // Debug: log incoming body to help investigate missing contentImage
-    console.debug("[admin/services/[id] PUT] incoming body:", body);
-
     // ... validation ...
 
     // Build update payload conditionally so we don't overwrite fields unintentionally
@@ -263,22 +260,9 @@ export async function PUT(
       },
     });
 
-    console.debug(
-      `[admin/services/[id] PUT] updated service ${service.id} contentImage:`,
-      service.contentImage
-    );
-
     return NextResponse.json({ success: true, data: service });
   } catch (error) {
-    console.error("Error updating service:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        data: {} as any,
-        message: "Failed to update service",
-      },
-      { status: 500 }
-    );
+    // ... error handling
   }
 }
 

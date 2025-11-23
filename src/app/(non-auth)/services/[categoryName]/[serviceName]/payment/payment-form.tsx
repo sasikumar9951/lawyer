@@ -248,11 +248,8 @@ export default function PaymentForm({
       toast.error("Please select at least one service option");
       return false;
     }
-    // Check if form is completed if form exists
-    if (form && !formData) {
-      toast.error("Please complete the service form before proceeding");
-      return false;
-    }
+    // Note: service form completion enforcement removed so submission
+    // proceeds even if the form UI is commented out or not used.
     return true;
   };
 
@@ -813,7 +810,7 @@ export default function PaymentForm({
                 <>
                   <Button
                     onClick={handleSubmit}
-                    disabled={isSubmitting || (form ? !formData : false)}
+                    disabled={isSubmitting}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
                   >
                     {isSubmitting ? (
@@ -821,8 +818,6 @@ export default function PaymentForm({
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                         <span>Processing...</span>
                       </div>
-                    ) : form && !formData ? (
-                      "Complete Form First"
                     ) : form && formData ? (
                       "Complete Submission ✓"
                     ) : (

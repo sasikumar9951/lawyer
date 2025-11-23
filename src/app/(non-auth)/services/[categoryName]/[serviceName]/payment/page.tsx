@@ -37,6 +37,20 @@ export default function PaymentPage() {
         if (data.data.form) {
           setForm(data.data.form);
         }
+        // If user came from the pricing step, restore selected prices from sessionStorage
+        try {
+          const stored = sessionStorage.getItem("serviceSelection");
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed && parsed.serviceId === data.data.id) {
+              // parsed.selectedPrices comes from the pricing component and
+              // has shape similar to ApiServicePrice (id, name, price, discountAmount, isCompulsory)
+              setSelectedPrices(parsed.selectedPrices as any);
+            }
+          }
+        } catch (e) {
+          console.warn("No stored service selection or failed to parse", e);
+        }
       } catch (error) {
         console.error("Error fetching service:", error);
         toast.error("Failed to load service details");

@@ -444,16 +444,11 @@ const ServicesBuilderContent = () => {
       // If editing an existing service, persist contentImage immediately
       if (isEditMode && editServiceId) {
         try {
-          const resp = await fetch(`/api/admin/services/${editServiceId}`, {
+          await fetch(`/api/admin/services/${editServiceId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ contentImage: url }),
           });
-
-          const respJson = await resp.json().catch(() => null);
-          if (!resp.ok || !respJson || !respJson.success) {
-            console.error("Failed to persist contentImage (server):", respJson);
-          }
         } catch (err) {
           console.error("Failed to persist contentImage:", err);
         }
