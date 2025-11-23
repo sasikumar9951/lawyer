@@ -260,9 +260,85 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json({ success: true, data: service });
+    // If FAQs were provided in the request, replace existing FAQs
+    if (typeof body.faqs !== "undefined") {
+      try {
+        await prisma.serviceFAQ.deleteMany({ where: { serviceId: id } });
+
+        if (Array.isArray(body.faqs) && body.faqs.length > 0) {
+          // Use createMany for performance (no individual selects needed)
+          await prisma.serviceFAQ.createMany({
+            data: body.faqs.map((f: any) => ({
+              serviceId: id,
+              question: f.question,
+              answer: f.answer,
+            })),
+          });
+        }
+      } catch (e) {
+        console.error("Failed to update faqs:", e);
+      }
+    }
+
+    // If prices were provided, replace existing price components
+    if (typeof body.prices !== "undefined") {
+      try {
+        await prisma.servicePrice.deleteMany({ where: { serviceId: id } });
+
+        if (Array.isArray(body.prices) && body.prices.length > 0) {
+          await prisma.servicePrice.createMany({
+            data: body.prices.map((p: any) => ({
+              serviceId: id,
+              name: p.name,
+              price: p.price,
+              discountAmount: typeof p.discountAmount !== "undefined" ? p.discountAmount : null,
+              isCompulsory: !!p.isCompulsory,
+            })),
+          });
+        }
+      } catch (e) {
+        console.error("Failed to update prices:", e);
+      }
+    }
+
+    // Re-fetch service to include latest related data (faqs, price)
+    const refreshed = await prisma.service.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        isActive: true,
+        contentJson: true,
+        categoryName: true,
+        formId: true,
+        createdAt: true,
+        updatedAt: true,
+        heroTitle: true,
+        heroSubtitle: true,
+        heroImage: true,
+        contentImage: true,
+        category: true,
+        subCategoryId: true,
+        subCategory: true,
+        faqs: true,
+        price: true,
+        rating: true,
+      },
+    });
+
+    return NextResponse.json({ success: true, data: refreshed });
   } catch (error) {
-    // ... error handling
+    console.error("Error updating service:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        data: {} as any,
+        message: "Failed to update service",
+      },
+      { status: 500 }
+    );
   }
 }
 
