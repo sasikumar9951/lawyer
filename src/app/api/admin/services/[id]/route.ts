@@ -34,6 +34,8 @@ export async function GET(
         heroTitle: true,
         heroSubtitle: true,
         heroImage: true,
+        metaTitle: true,
+        metaDescription: true,
         contentImage: true,
         category: {
           select: {
@@ -118,6 +120,9 @@ export async function GET(
         heroTitle: service.heroTitle,
         heroSubtitle: service.heroSubtitle,
         heroImage: service.heroImage,
+        // SEO Meta
+        metaTitle: service.metaTitle,
+        metaDescription: service.metaDescription,
         contentImage: service.contentImage,
         contentJson: service.contentJson as ServiceContent | null,
         categoryName: service.categoryName,
@@ -212,6 +217,13 @@ export async function PUT(
           : undefined,
       heroImage:
         typeof body.heroImage !== "undefined" ? body.heroImage : undefined,
+      // SEO Meta
+      metaTitle:
+        typeof body.metaTitle !== "undefined" ? body.metaTitle : undefined,
+      metaDescription:
+        typeof body.metaDescription !== "undefined"
+          ? body.metaDescription
+          : undefined,
     };
 
     // Sub-category: connect or disconnect explicitly
@@ -291,7 +303,10 @@ export async function PUT(
               serviceId: id,
               name: p.name,
               price: p.price,
-              discountAmount: typeof p.discountAmount !== "undefined" ? p.discountAmount : null,
+              discountAmount:
+                typeof p.discountAmount !== "undefined"
+                  ? p.discountAmount
+                  : null,
               isCompulsory: !!p.isCompulsory,
             })),
           });
@@ -318,6 +333,8 @@ export async function PUT(
         heroTitle: true,
         heroSubtitle: true,
         heroImage: true,
+        metaTitle: true,
+        metaDescription: true,
         contentImage: true,
         category: true,
         subCategoryId: true,

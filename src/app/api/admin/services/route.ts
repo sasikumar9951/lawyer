@@ -55,6 +55,9 @@ export async function GET(): Promise<NextResponse<ServicesResponse>> {
         heroTitle: service.heroTitle,
         heroSubtitle: service.heroSubtitle,
         heroImage: service.heroImage,
+        // ⭐ SEO Meta
+        metaTitle: service.metaTitle,
+        metaDescription: service.metaDescription,
         contentImage: service.contentImage,
 
         createdAt: service.createdAt.toISOString(),
@@ -206,6 +209,9 @@ export async function POST(
         heroSubtitle: body.heroSubtitle,
         heroImage: body.heroImage,
         contentImage: body.contentImage,
+        // SEO Meta
+        metaTitle: body.metaTitle,
+        metaDescription: body.metaDescription,
 
         contentJson: body.content
           ? JSON.parse(JSON.stringify(body.content))
@@ -258,6 +264,8 @@ export async function POST(
         heroTitle: true,
         heroSubtitle: true,
         heroImage: true,
+        metaTitle: true,
+        metaDescription: true,
         contentImage: true,
 
         category: true,
@@ -305,6 +313,9 @@ export async function POST(
         heroSubtitle: service.heroSubtitle,
         heroImage: service.heroImage,
         contentImage: service.contentImage,
+        // ⭐ SEO Meta
+        metaTitle: service.metaTitle,
+        metaDescription: service.metaDescription,
 
         createdAt: service.createdAt.toISOString(),
         updatedAt: service.updatedAt.toISOString(),

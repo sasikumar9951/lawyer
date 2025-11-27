@@ -75,6 +75,8 @@ const ServicesBuilderContent = () => {
   const [heroSubtitle, setHeroSubtitle] = useState("");
   const [heroImage, setHeroImage] = useState("");
   const [contentImage, setContentImage] = useState("");
+  const [metaTitle, setMetaTitle] = useState("");
+  const [metaDescription, setMetaDescription] = useState("");
   const [faqs, setFaqs] = useState<FAQ[]>([{ question: "", answer: "" }]);
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
   const [deliverables, setDeliverables] = useState<{
@@ -235,6 +237,8 @@ const ServicesBuilderContent = () => {
         setHeroSubtitle(service.heroSubtitle || "");
         setHeroImage(service.heroImage || "");
         setContentImage(service.contentImage ?? "");
+        setMetaTitle(service.metaTitle || "");
+        setMetaDescription(service.metaDescription || "");
 
         // Set prices
         if (service.price && service.price.length > 0) {
@@ -530,6 +534,10 @@ const ServicesBuilderContent = () => {
           heroSubtitle,
           heroImage,
           contentImage: contentImage?.trim() ? contentImage : undefined,
+          metaTitle: metaTitle?.trim() ? metaTitle : undefined,
+          metaDescription: metaDescription?.trim()
+            ? metaDescription
+            : undefined,
           faqs: validFaqs,
           prices: validPrices,
           content:
@@ -689,6 +697,38 @@ const ServicesBuilderContent = () => {
               />
             )}
           </div>
+
+          {/* SEO Meta */}
+          <Card>
+            <CardHeader>
+              <CardTitle>SEO Meta</CardTitle>
+              <CardDescription>
+                Add meta title and description for better search engine display
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="metaTitle">Meta Title</Label>
+                <Input
+                  id="metaTitle"
+                  value={metaTitle}
+                  onChange={(e) => setMetaTitle(e.target.value)}
+                  placeholder="Enter meta title (optional)"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="metaDescription">Meta Description</Label>
+                <Textarea
+                  id="metaDescription"
+                  value={metaDescription}
+                  onChange={(e) => setMetaDescription(e.target.value)}
+                  placeholder="Enter meta description (optional)"
+                  className="mt-1"
+                />
+              </div>
+            </CardContent>
+          </Card>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

@@ -98,6 +98,9 @@ export type ApiService = {
   heroSubtitle?: string | null;
   heroImage?: string | null;
   contentImage?: string | null;
+  // ⭐ SEO Meta
+  metaTitle?: string | null;
+  metaDescription?: string | null;
 
   faqs?: ApiServiceFAQ[];
   price?: ApiServicePrice[];
@@ -151,6 +154,9 @@ export type CreateServiceRequest = {
   heroSubtitle?: string;
   heroImage?: string;
   contentImage?: string;
+  // SEO Meta
+  metaTitle?: string;
+  metaDescription?: string;
 
   faqs?: CreateServiceFAQRequest[];
   prices?: CreateServicePriceRequest[];
@@ -173,6 +179,9 @@ export type UpdateServiceRequest = {
   heroSubtitle?: string;
   heroImage?: string;
   contentImage?: string;
+  // SEO Meta
+  metaTitle?: string;
+  metaDescription?: string;
 
   faqs?: CreateServiceFAQRequest[];
   prices?: CreateServicePriceRequest[];
