@@ -1,5 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import Link from "next/link";
 import type { ApiService } from "@/types/api/services";
 
 type PartnerServiceData = ApiService & {
@@ -252,6 +253,31 @@ const Partner = ({
               promised time
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Quick Action Buttons - Draft or Speak to Lawyer */}
+      <div className="bg-white rounded-lg shadow-2xl p-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+          Ready to get started?
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {serviceData?.enableDraftButton !== false && (
+            <Link
+              href={`/services/${serviceData?.category?.slug}/${serviceData?.slug}/payment`}
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors duration-200"
+            >
+              Draft my Gift Deed Online
+            </Link>
+          )}
+          {serviceData?.enableSpeakButton !== false && (
+            <Link
+              href={`/services/${serviceData?.category?.slug}/${serviceData?.slug}/payment`}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg text-center transition-colors duration-200"
+            >
+              Speak to a Gift Deed Lawyer
+            </Link>
+          )}
         </div>
       </div>
 

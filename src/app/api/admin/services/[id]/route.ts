@@ -37,6 +37,8 @@ export async function GET(
         metaTitle: true,
         metaDescription: true,
         contentImage: true,
+        enableDraftButton: true,
+        enableSpeakButton: true,
         category: {
           select: {
             id: true,
@@ -124,6 +126,9 @@ export async function GET(
         metaTitle: service.metaTitle,
         metaDescription: service.metaDescription,
         contentImage: service.contentImage,
+        // Quick-action toggles
+        enableDraftButton: service.enableDraftButton,
+        enableSpeakButton: service.enableSpeakButton,
         contentJson: service.contentJson as ServiceContent | null,
         categoryName: service.categoryName,
         formId: service.formId,
@@ -223,6 +228,15 @@ export async function PUT(
       metaDescription:
         typeof body.metaDescription !== "undefined"
           ? body.metaDescription
+          : undefined,
+      // Quick-action toggles
+      enableDraftButton:
+        typeof body.enableDraftButton !== "undefined"
+          ? body.enableDraftButton
+          : undefined,
+      enableSpeakButton:
+        typeof body.enableSpeakButton !== "undefined"
+          ? body.enableSpeakButton
           : undefined,
     };
 
@@ -336,6 +350,8 @@ export async function PUT(
         metaTitle: true,
         metaDescription: true,
         contentImage: true,
+        enableDraftButton: true,
+        enableSpeakButton: true,
         category: true,
         subCategoryId: true,
         subCategory: true,

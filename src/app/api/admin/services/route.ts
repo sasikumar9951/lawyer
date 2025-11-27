@@ -59,6 +59,9 @@ export async function GET(): Promise<NextResponse<ServicesResponse>> {
         metaTitle: service.metaTitle,
         metaDescription: service.metaDescription,
         contentImage: service.contentImage,
+        // Quick-action toggles
+        enableDraftButton: service.enableDraftButton,
+        enableSpeakButton: service.enableSpeakButton,
 
         createdAt: service.createdAt.toISOString(),
         updatedAt: service.updatedAt.toISOString(),
@@ -217,6 +220,10 @@ export async function POST(
           ? JSON.parse(JSON.stringify(body.content))
           : null,
 
+        // Quick-action toggles
+        enableDraftButton: body.enableDraftButton ?? true,
+        enableSpeakButton: body.enableSpeakButton ?? true,
+
         // Create Related Data (FAQs, Price)
         faqs: body.faqs
           ? {
@@ -266,6 +273,8 @@ export async function POST(
         heroImage: true,
         metaTitle: true,
         metaDescription: true,
+        enableDraftButton: true,
+        enableSpeakButton: true,
         contentImage: true,
 
         category: true,

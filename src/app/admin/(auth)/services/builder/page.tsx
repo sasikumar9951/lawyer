@@ -77,6 +77,8 @@ const ServicesBuilderContent = () => {
   const [contentImage, setContentImage] = useState("");
   const [metaTitle, setMetaTitle] = useState("");
   const [metaDescription, setMetaDescription] = useState("");
+  const [enableDraftButton, setEnableDraftButton] = useState(true);
+  const [enableSpeakButton, setEnableSpeakButton] = useState(true);
   const [faqs, setFaqs] = useState<FAQ[]>([{ question: "", answer: "" }]);
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
   const [deliverables, setDeliverables] = useState<{
@@ -239,6 +241,8 @@ const ServicesBuilderContent = () => {
         setContentImage(service.contentImage ?? "");
         setMetaTitle(service.metaTitle || "");
         setMetaDescription(service.metaDescription || "");
+        setEnableDraftButton(service.enableDraftButton ?? true);
+        setEnableSpeakButton(service.enableSpeakButton ?? true);
 
         // Set prices
         if (service.price && service.price.length > 0) {
@@ -538,6 +542,8 @@ const ServicesBuilderContent = () => {
           metaDescription: metaDescription?.trim()
             ? metaDescription
             : undefined,
+          enableDraftButton,
+          enableSpeakButton,
           faqs: validFaqs,
           prices: validPrices,
           content:
@@ -725,6 +731,34 @@ const ServicesBuilderContent = () => {
                   onChange={(e) => setMetaDescription(e.target.value)}
                   placeholder="Enter meta description (optional)"
                   className="mt-1"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Action Buttons */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Action Buttons</CardTitle>
+              <CardDescription>
+                Enable or disable quick action buttons on the service page
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="enableDraftButton">Draft Button</Label>
+                <Switch
+                  id="enableDraftButton"
+                  checked={enableDraftButton}
+                  onCheckedChange={setEnableDraftButton}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="enableSpeakButton">Speak to Lawyer Button</Label>
+                <Switch
+                  id="enableSpeakButton"
+                  checked={enableSpeakButton}
+                  onCheckedChange={setEnableSpeakButton}
                 />
               </div>
             </CardContent>

@@ -101,6 +101,9 @@ export type ApiService = {
   // ⭐ SEO Meta
   metaTitle?: string | null;
   metaDescription?: string | null;
+  // Quick action toggles
+  enableDraftButton?: boolean;
+  enableSpeakButton?: boolean;
 
   faqs?: ApiServiceFAQ[];
   price?: ApiServicePrice[];
@@ -157,6 +160,9 @@ export type CreateServiceRequest = {
   // SEO Meta
   metaTitle?: string;
   metaDescription?: string;
+  // Quick action toggles
+  enableDraftButton?: boolean;
+  enableSpeakButton?: boolean;
 
   faqs?: CreateServiceFAQRequest[];
   prices?: CreateServicePriceRequest[];
@@ -182,6 +188,9 @@ export type UpdateServiceRequest = {
   // SEO Meta
   metaTitle?: string;
   metaDescription?: string;
+  // Quick action toggles
+  enableDraftButton?: boolean;
+  enableSpeakButton?: boolean;
 
   faqs?: CreateServiceFAQRequest[];
   prices?: CreateServicePriceRequest[];

@@ -46,6 +46,8 @@ export default async function ServiceDetailPage({ params }: Params) {
       metaTitle: true,
       metaDescription: true,
       contentImage: true,
+      enableDraftButton: true,
+      enableSpeakButton: true,
       contentJson: true,
       categoryName: true,
       formId: true,
