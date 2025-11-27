@@ -241,6 +241,30 @@ export default async function ServiceDetailPage({ params }: Params) {
                   serviceData={transformedServiceData}
                   contentImage={transformedServiceData.contentImage}
                 />
+                {/* Quick Action Buttons */}
+                <div className="bg-white rounded-lg shadow-2xl p-6">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+                    Ready to get started?
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {transformedServiceData?.enableDraftButton !== false && (
+                      <a
+                        href={`/services/${transformedServiceData?.category?.slug}/${transformedServiceData?.slug}/payment`}
+                        className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors duration-200"
+                      >
+                        Draft my {transformedServiceData?.name} Online
+                      </a>
+                    )}
+                    {transformedServiceData?.enableSpeakButton !== false && (
+                      <a
+                        href={`/services/${transformedServiceData?.category?.slug}/${transformedServiceData?.slug}/payment`}
+                        className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg text-center transition-colors duration-200"
+                      >
+                        Speak to a {transformedServiceData?.name} Lawyer
+                      </a>
+                    )}
+                  </div>
+                </div>
                 <div className="bg-white rounded-lg shadow-xl p-6">
                   <Faq serviceData={transformedServiceData} />
                 </div>
