@@ -308,40 +308,87 @@ const Partner = ({
                 {section.type === "list" ? (
                   <div className="space-y-3">
                     {section.description && (
-                      <p className="text-gray-700 mb-4">
-                        {section.description}
-                      </p>
+                      <p className="text-gray-700 mb-4">{section.description}</p>
                     )}
                     {section.points &&
-                      section.points.map(
-                        (point: string, pointIndex: number) => (
-                          <div
-                            key={pointIndex}
-                            className="flex items-center space-x-3"
-                          >
-                            <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                              <svg
-                                className="w-3 h-3 text-white"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            </div>
-                            <span className="text-gray-700">{point}</span>
+                      section.points.map((point: string, pointIndex: number) => (
+                        <div key={pointIndex} className="flex items-start gap-3">
+                          <div className="flex-shrink-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
+                              <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
                           </div>
-                        )
-                      )}
+                          <span className="text-gray-700 leading-6">{point}</span>
+                        </div>
+                      ))}
                   </div>
-                ) : (
+                ) : section.type === "text" ? (
                   <div className="space-y-4 text-gray-700">
                     <p>{section.content}</p>
                   </div>
-                )}
+                ) : section.type === "image" ? (
+                  (() => {
+                    const sec: any = section || {};
+                    const candidates = [
+                      sec.imageUrl,
+                      sec.url,
+                      sec.src,
+                      sec.image,
+                      sec.image?.url,
+                      sec.image?.src,
+                      sec.image_url,
+                      sec.image_src,
+                      sec.image_uri,
+                      sec.imageUri,
+                      sec.file?.url,
+                      sec.attachment?.url,
+                      sec.data?.imageUrl,
+                      sec.data?.url,
+                    ];
+                    const maybeUrl = candidates.find((c) => typeof c === "string" && c.trim() !== "");
+                    if (!maybeUrl) return null;
+                    return (
+                      <div className="flex flex-col items-start">
+                        <img
+                          src={maybeUrl}
+                          alt={sec.alt || section.title || ""}
+                          className="w-full h-auto rounded-md object-contain mb-3"
+                        />
+                        {section.caption && <div className="text-sm text-gray-600">{section.caption}</div>}
+                      </div>
+                    );
+                  })()
+                ) : section.type === "table" ? (
+                  <div className="overflow-auto">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr>
+                          {section.headers &&
+                            section.headers.map((h: string, i: number) => (
+                              <th key={i} className="border px-3 py-2 text-left bg-gray-50">
+                                {h}
+                              </th>
+                            ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {section.rows &&
+                          section.rows.map((row: string[], ri: number) => (
+                            <tr key={ri} className={ri % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                              {row.map((cell: string, ci: number) => (
+                                <td key={ci} className="border px-3 py-2 align-top">{cell}</td>
+                              ))}
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                    {section.caption && <div className="text-sm text-gray-600 mt-2">{section.caption}</div>}
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>

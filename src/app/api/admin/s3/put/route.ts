@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUploadSignedUrlFromPath, generateUniqueFilePath } from "@/lib/s3";
+import { getUploadSignedUrlFromPath, getGetSignedUrlFromPath, generateUniqueFilePath } from "@/lib/s3";
 import prisma from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
@@ -27,12 +27,15 @@ export async function POST(request: NextRequest) {
       // 2. Get Signed URL
       const signedUrl = await getUploadSignedUrlFromPath(s3Path);
 
-      // 3. Return immediately
+      // 3. Also generate a signed GET url so the client can preview the uploaded file
+      const signedGetUrl = await getGetSignedUrlFromPath(s3Path);
+
       return NextResponse.json({
         success: true,
         data: {
           fileId: "service-asset-" + Date.now(), // Dummy ID
           signedUrl,
+          signedGetUrl,
           s3Path,
           fileName,
         },
@@ -58,6 +61,8 @@ export async function POST(request: NextRequest) {
 
     // Get signed URL for upload
     const signedUrl = await getUploadSignedUrlFromPath(s3Path);
+    // Also generate a signed GET URL for previewing the uploaded file
+    const signedGetUrl = await getGetSignedUrlFromPath(s3Path);
 
     // Create file record in database (Only for cases)
     const fileRecord = await prisma.caseFiles.create({
@@ -74,6 +79,7 @@ export async function POST(request: NextRequest) {
       data: {
         fileId: fileRecord.id,
         signedUrl,
+        signedGetUrl,
         s3Path,
         fileName,
       },

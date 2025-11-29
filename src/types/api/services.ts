@@ -301,10 +301,27 @@ export type DeliverablesContentBlock = {
   items: string[];
 };
 
+export type ImageContentBlock = {
+  type: "image";
+  title: string;
+  imageUrl: string;
+  alt?: string;
+};
+
+export type TableContentBlock = {
+  type: "table";
+  title: string;
+  headers: string[];
+  rows: string[][];
+  caption?: string;
+};
+
 export type ContentBlock =
   | ListContentBlock
   | TextContentBlock
-  | DeliverablesContentBlock;
+  | DeliverablesContentBlock
+  | ImageContentBlock
+  | TableContentBlock;
 
 export type ServiceContent = {
   blocks: ContentBlock[];

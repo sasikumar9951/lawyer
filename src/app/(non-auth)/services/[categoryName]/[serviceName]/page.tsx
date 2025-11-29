@@ -163,9 +163,7 @@ export default async function ServiceDetailPage({ params }: Params) {
       })) || [],
     // Transform contentJson.blocks to contentSections
     contentSections:
-      typedContentJson?.blocks?.filter(
-        (block) => block.type !== "deliverables"
-      ) || [],
+      typedContentJson?.blocks?.filter((block) => block.type !== "deliverables") || [],
     // Extract deliverables from contentJson.blocks
     deliverables:
       typedContentJson?.blocks?.find(
@@ -237,34 +235,34 @@ export default async function ServiceDetailPage({ params }: Params) {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
               {/* Left Side - Partner Component + FAQ + Carousel (Scrollable) */}
               <div className="lg:col-span-2 space-y-6 lg:space-y-8">
-                <Partner
-                  serviceData={transformedServiceData}
-                  contentImage={transformedServiceData.contentImage}
-                />
+                <Partner serviceData={transformedServiceData} />
                 {/* Quick Action Buttons */}
-                <div className="bg-white rounded-lg shadow-2xl p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-                    Ready to get started?
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {transformedServiceData?.enableDraftButton !== false && (
-                      <a
-                        href={`/services/${transformedServiceData?.category?.slug}/${transformedServiceData?.slug}/payment`}
-                        className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors duration-200"
-                      >
-                        Draft my {transformedServiceData?.name} Online
-                      </a>
-                    )}
-                    {transformedServiceData?.enableSpeakButton !== false && (
-                      <a
-                        href={`/services/${transformedServiceData?.category?.slug}/${transformedServiceData?.slug}/payment`}
-                        className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg text-center transition-colors duration-200"
-                      >
-                        Speak to a {transformedServiceData?.name} Lawyer
-                      </a>
-                    )}
+                {(transformedServiceData?.enableDraftButton !== false ||
+                  transformedServiceData?.enableSpeakButton !== false) && (
+                  <div className="bg-white rounded-lg shadow-2xl p-6">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+                      Ready to get started?
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {transformedServiceData?.enableDraftButton !== false && (
+                        <a
+                          href={`/services/${transformedServiceData?.category?.slug}/${transformedServiceData?.slug}/payment`}
+                          className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors duration-200"
+                        >
+                          Draft my {transformedServiceData?.name} Online
+                        </a>
+                      )}
+                      {transformedServiceData?.enableSpeakButton !== false && (
+                        <a
+                          href={`/services/${transformedServiceData?.category?.slug}/${transformedServiceData?.slug}/payment`}
+                          className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg text-center transition-colors duration-200"
+                        >
+                          Speak to a {transformedServiceData?.name} Lawyer
+                        </a>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
                 <div className="bg-white rounded-lg shadow-xl p-6">
                   <Faq serviceData={transformedServiceData} />
                 </div>

@@ -130,7 +130,7 @@ const ServicesBuilderContent = () => {
         throw new Error("Failed to get upload URL");
       }
 
-      const { signedUrl, s3Path } = responseData.data; // 2. Upload to S3 directly using the signed URL
+      const { signedUrl, s3Path, signedGetUrl } = responseData.data; // 2. Upload to S3 directly using the signed URL
 
       const uploadRes = await fetch(signedUrl, {
         method: "PUT",
@@ -142,16 +142,16 @@ const ServicesBuilderContent = () => {
         throw new Error("Failed to upload to S3");
       }
 
-      // ============================================================
-      // FIX: Constructing the Full URL manually
-      // ============================================================
-      // Use the correct bucket name and region (from your .env configuration)
-      const bucketName = "lawyer-development";
-      const region = "ap-south-1";
+      // If the upload endpoint returned a signed GET URL, use it for previews.
+      // Otherwise fall back to constructing a URL (best-effort).
+      if (signedGetUrl && typeof signedGetUrl === "string") {
+        return signedGetUrl;
+      }
 
-      // Construct the full S3 URL
+      // Fallback: try to construct a public URL from known bucket/region.
+      const bucketName = process.env.NEXT_PUBLIC_S3_BUCKET || "lawyer-development";
+      const region = process.env.NEXT_PUBLIC_AWS_REGION || "ap-south-1";
       const fullUrl = `https://${bucketName}.s3.${region}.amazonaws.com/${s3Path}`;
-
       return fullUrl;
     } catch (error) {
       console.error("Upload error:", error);
@@ -338,11 +338,20 @@ const ServicesBuilderContent = () => {
   };
 
   // Content block management functions
-  const addContentBlock = (type: "list" | "text") => {
+  // Content block management functions
+  const addContentBlock = (
+    type: "list" | "text" | "image" | "table"
+  ) => {
     const newBlock: ContentBlock =
       type === "list"
         ? { type: "list", title: "", description: "", points: [""] }
-        : { type: "text", title: "", content: "" };
+        : type === "text"
+        ? { type: "text", title: "", content: "" }
+        : type === "image"
+        ? { type: "image", title: "", imageUrl: "", alt: "" }
+        : // table
+          ({ type: "table", title: "", headers: ["Column 1"], rows: [[""]], caption: "" } as any);
+
     setContentBlocks([...contentBlocks, newBlock]);
   };
 
@@ -412,6 +421,85 @@ const ServicesBuilderContent = () => {
       ...deliverables,
       items: deliverables.items.map((item, i) => (i === index ? value : item)),
     });
+  };
+
+  // Content block helpers for image & table
+  const handleContentBlockImageUpload = async (
+    blockIndex: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = await uploadToS3(file);
+    if (!url) return;
+    const block = contentBlocks[blockIndex];
+    if (block.type === "image") {
+      updateContentBlock(blockIndex, { ...block, imageUrl: url });
+    }
+  };
+
+  const updateImageAlt = (blockIndex: number, alt: string) => {
+    const block = contentBlocks[blockIndex];
+    if (block.type === "image") {
+      updateContentBlock(blockIndex, { ...block, alt });
+    }
+  };
+
+  const addTableRow = (blockIndex: number) => {
+    const block = contentBlocks[blockIndex];
+    if (block.type === "table") {
+      const newRow = block.headers.map(() => "");
+      updateContentBlock(blockIndex, { ...block, rows: [...block.rows, newRow] });
+    }
+  };
+
+  const removeTableRow = (blockIndex: number, rowIndex: number) => {
+    const block = contentBlocks[blockIndex];
+    if (block.type === "table") {
+      const rows = block.rows.filter((_, i) => i !== rowIndex);
+      updateContentBlock(blockIndex, { ...block, rows });
+    }
+  };
+
+  const updateTableCell = (
+    blockIndex: number,
+    rowIndex: number,
+    colIndex: number,
+    value: string
+  ) => {
+    const block = contentBlocks[blockIndex];
+    if (block.type === "table") {
+      const rows = block.rows.map((r, ri) =>
+        ri === rowIndex ? r.map((c, ci) => (ci === colIndex ? value : c)) : r
+      );
+      updateContentBlock(blockIndex, { ...block, rows });
+    }
+  };
+
+  const addTableColumn = (blockIndex: number) => {
+    const block = contentBlocks[blockIndex];
+    if (block.type === "table") {
+      const headers = [...block.headers, `Column ${block.headers.length + 1}`];
+      const rows = block.rows.map((r) => [...r, ""]);
+      updateContentBlock(blockIndex, { ...block, headers, rows });
+    }
+  };
+
+  const removeTableColumn = (blockIndex: number, colIndex: number) => {
+    const block = contentBlocks[blockIndex];
+    if (block.type === "table" && block.headers.length > 1) {
+      const headers = block.headers.filter((_, i) => i !== colIndex);
+      const rows = block.rows.map((r) => r.filter((_, i) => i !== colIndex));
+      updateContentBlock(blockIndex, { ...block, headers, rows });
+    }
+  };
+
+  const updateTableHeader = (blockIndex: number, colIndex: number, value: string) => {
+    const block = contentBlocks[blockIndex];
+    if (block.type === "table") {
+      const headers = block.headers.map((h, i) => (i === colIndex ? value : h));
+      updateContentBlock(blockIndex, { ...block, headers });
+    }
   };
 
   const handleHeroImageUpload = async (
@@ -689,20 +777,7 @@ const ServicesBuilderContent = () => {
               )}
             </div>
           </div>
-          <div>
-            <Label>Content Image</Label>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={handleContentImageUpload}
-            />
-            {contentImage && (
-              <img
-                src={contentImage}
-                className="w-full h-auto max-h-[400px] mt-3 rounded-md border object-contain bg-gray-50"
-              />
-            )}
-          </div>
+          {/* Content Image upload removed per request */}
 
           {/* SEO Meta */}
           <Card>
@@ -1341,8 +1416,13 @@ const ServicesBuilderContent = () => {
             <div key={blockIndex} className="border rounded-lg p-4 space-y-4">
               <div className="flex justify-between items-center">
                 <h4 className="font-medium">
-                  {block.type === "list" ? "List Content" : "Text Content"}{" "}
-                  {blockIndex + 1}
+                  {block.type === "list"
+                    ? "List Content"
+                    : block.type === "text"
+                    ? "Text Content"
+                    : block.type === "image"
+                    ? "Image Content"
+                    : "Table Content"} {blockIndex + 1}
                 </h4>
                 <Button
                   variant="outline"
@@ -1456,6 +1536,96 @@ const ServicesBuilderContent = () => {
                       />
                     </div>
                   </div>
+                ) : block.type === "image" ? (
+                  <div>
+                    <Label>Image</Label>
+                    <div className="mt-2">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleContentBlockImageUpload(blockIndex, e)}
+                        disabled={isUploading || isLoadingService}
+                      />
+                      <div className="mt-2">
+                        {(block as any).imageUrl ? (
+                          <img
+                            src={(block as any).imageUrl}
+                            alt={(block as any).alt || ""}
+                            className="w-full h-auto max-h-[300px] rounded-md border object-contain bg-gray-50"
+                          />
+                        ) : (
+                          <div className="text-sm text-gray-500">No image uploaded</div>
+                        )}
+                      </div>
+                      <div className="mt-2">
+                        <Label>Alt Text</Label>
+                        <Input
+                          value={(block as any).alt || ""}
+                          onChange={(e) => updateImageAlt(blockIndex, e.target.value)}
+                          placeholder="Image alt text (optional)"
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : block.type === "table" ? (
+                  <div>
+                    <Label>Table</Label>
+                    <div className="mt-2 overflow-auto">
+                      <div className="mb-2 flex items-center gap-2">
+                        <Button size="sm" variant="outline" onClick={() => addTableColumn(blockIndex)} disabled={isLoadingService}>
+                          Add Column
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => addTableRow(blockIndex)} disabled={isLoadingService}>
+                          Add Row
+                        </Button>
+                      </div>
+                      <div className="min-w-full">
+                        <table className="w-full table-auto border-collapse">
+                          <thead>
+                            <tr>
+                              {(block as any).headers.map((h: string, colIndex: number) => (
+                                <th key={colIndex} className="border p-2 text-left">
+                                  <div className="flex items-center gap-2">
+                                    <Input
+                                      value={h}
+                                      onChange={(e) => updateTableHeader(blockIndex, colIndex, e.target.value)}
+                                      className="mt-0"
+                                    />
+                                    {(block as any).headers.length > 1 && (
+                                      <Button size="sm" variant="outline" onClick={() => removeTableColumn(blockIndex, colIndex)}>
+                                        <Minus className="w-3 h-3" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(block as any).rows.map((row: string[], rowIndex: number) => (
+                              <tr key={rowIndex} className="border-t">
+                                {row.map((cell, colIndex) => (
+                                  <td key={colIndex} className="border p-2 align-top">
+                                    <Input
+                                      value={cell}
+                                      onChange={(e) => updateTableCell(blockIndex, rowIndex, colIndex, e.target.value)}
+                                      className="mt-0"
+                                    />
+                                  </td>
+                                ))}
+                                <td className="p-2">
+                                  <Button size="sm" variant="destructive" onClick={() => removeTableRow(blockIndex, rowIndex)}>
+                                    Delete
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
                 ) : null}
               </div>
             </div>
@@ -1477,6 +1647,15 @@ const ServicesBuilderContent = () => {
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Text Content
+            </Button>
+            {/* Image content creation removed per request */}
+            <Button
+              variant="outline"
+              onClick={() => addContentBlock("table")}
+              disabled={isLoadingService}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Table Content
             </Button>
           </div>
         </CardContent>
